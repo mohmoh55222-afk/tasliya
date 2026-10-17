@@ -1325,6 +1325,11 @@ body.kb .room-screen *,body.kb .room-screen *::before,body.kb .room-screen *::af
 
 .newsbell{font-size:18px}.newsbell.dot::after{content:"";position:absolute;top:-3px;right:-3px;width:10px;height:10px;border-radius:50%;background:#ef4444;border:1.5px solid #150f3a}
 .nct{font-weight:700;font-size:16.5px;line-height:1.75;letter-spacing:.1px}
+
+.gfx.cam{animation:none!important}
+.cn-dark,.cn-vig,.cn-grain{display:none!important}
+.cn-rays{animation:cnrs var(--T) ease both!important;transform:none!important;opacity:.5!important}
+.cn-glow{mix-blend-mode:normal!important;opacity:.45!important}
 </style>
 </head>
 <body>
@@ -1380,7 +1385,7 @@ async function claimCredits(){
     all.forEach(d=>{ const x=d.data(); sum+=x.amt; earn[x.kind]=r2((earn[x.kind]||0)+x.amt); logTx(x.kind,x.amt,x.from,x.amt); seenCred.add(d.id); });
     coins=Math.max(0,r2(coins+sum)); EARN=earn; await walletRef().update({coins,earn});
     for(const d of all){ try{ await db.doc("credits/"+d.id).delete(); }catch(e){} }
-    if(sum>=.01) toast("🪙 وصلك "+fmtc(sum)+" نقطة"); if(!room&&!dm) render();
+    if(sum>=.01 && !all.every(d=>d.data().kind==="roomshare")) toast("🪙 وصلك "+fmtc(sum)+" نقطة"); if(!room&&!dm) render();
   } finally{ claimingC=false; if([].concat(...Object.values(CRD)).some(d=>!seenCred.has(d.id))) claimCredits(); }
 }
 async function withdrawMain(n){ await setCoins(coins+n); logTx("main",n,null,n); EARN.main=r2((EARN.main||0)+n); try{ await walletRef().update({earn:EARN}); }catch(e){} }
@@ -3094,7 +3099,7 @@ function nextBanner(){
   b.append(c); b.style.setProperty("--gbd",((n.k?9:6.5)-.3)+"s"); b.addEventListener("animationend",e=>{ if(e.animationName==="gb2run") b.style.visibility="hidden"; }); document.body.append(b);
   b.onclick=async e=>{ e.stopPropagation(); if(same) return; try{ const sn=await db.doc("rooms/"+n.room).get(); if(sn.exists){ if(room) closeRoom(); enterRoom({id:n.room,...sn.data()}); fin(); } else toast("الغرفة لم تعد موجودة"); }catch(er){} };
   setTimeout(fin,(n.k?9:6.5)*1000);
-  if(n.k){ snd3D(n.k); if(room&&room.id===n.room) play3D(n.k); } else { if(room&&room.id===n.room) giftFx(n.emoji,n.name,n.amt,n.from,n); else giftSound(findGift(n),n.emoji,n.amt); }
+  if(n.k){ if(room&&room.id===n.room){ snd3D(n.k); play3D(n.k); } } else { if(room&&room.id===n.room) giftFx(n.emoji,n.name,n.amt,n.from,n); }
 }
 let T3=null;
 function loadThree(){ if(window.THREE) return Promise.resolve();
