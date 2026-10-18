@@ -1341,6 +1341,10 @@ body.kb .room-screen *,body.kb .room-screen *::before,body.kb .room-screen *::af
 .snk-dice{width:64px;height:64px;margin:10px auto;border-radius:16px;background:#fff;color:#111;font-size:34px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px #0008}
 .bilc{display:block;width:calc(100% + 20px);max-width:none;height:auto;border-radius:16px;margin:6px -10px;touch-action:none;box-shadow:0 8px 24px #000a}
 .snkc{display:block;width:100%;height:auto;border-radius:16px;margin:6px 0;box-shadow:0 8px 24px #000a}
+
+@keyframes dvspin{from{transform:rotateX(0) rotateY(0)}to{transform:rotateX(720deg) rotateY(1080deg)}}
+.snk-dice.spin{animation:dvspin .9s ease-out both}
+.gpanel.gbox{height:min(96vh,920px);max-height:96vh}
 </style>
 </head>
 <body>
@@ -1463,9 +1467,59 @@ function starTop(sz){ const s=el("span","startop"); s.style.width=sz+"px"; s.sty
 function frameWrap(node,key,px){ if(!key||!FRM[key]) return node; const w=el("div","frm fr-"+key); w.style.padding=(px||3)+"px"; w.append(node); return w; }
 function senderEl(n){ const b=el("b",null,n.from); if(n.fv&&VCOL[n.fv]) b.append(" ",vbadge(n.fv,16)); return b; }
 let shopTab="frames";
+
+
+/* ---- 20-second turn timer: computer plays for a late player ---- */
+let autoT=null, atI=null;
+const seatCont=st=>st.kind==="xo"?st:st.players;
+function autoStop(){ clearTimeout(autoT); clearInterval(atI); autoT=null; atI=null; }
+function autoCheck(){ autoStop(); const st=cur; if(!st||st.status!=="playing"||!(st.tAt||st.created)) return;
+  const cont=seatCont(st), pl=cont&&cont[st.turn]; if(!pl||pl.uid==="bot") return;
+  const end=(st.tAt||st.created)+20000, tick=()=>{ const x=document.getElementById("atimer"); if(x) x.textContent="⏳ "+Math.max(0,Math.ceil((end-Date.now())/1000))+" ث"; };
+  tick(); atI=setInterval(tick,300);
+  if(st.host===uid) autoT=setTimeout(()=>autoTake(st),Math.max(0,end-Date.now())); }
+async function autoTake(st){ autoStop(); if(cur!==st||st.status!=="playing") return; const s2=clone(st), cont=seatCont(s2), pl=cont[s2.turn];
+  if(!pl||pl.uid==="bot") return; pl.auto=pl.uid; pl.uid="bot"; await saveGame(s2); }
+async function seatBack(){ const st=cur; if(!st) return; const s2=clone(st), cont=seatCont(s2)||{};
+  const k=Object.keys(cont).find(x=>cont[x]&&cont[x].auto===uid); if(!k) return; cont[k].uid=uid; delete cont[k].auto; await saveGame(s2); toast("🎮 عدت للعب"); }
+function ptag(pl,sz){ const w=ptag0(pl,sz);
+  if(pl&&pl.auto===uid){ w.style.cursor="pointer"; w.title="اضغط لاستعادة لعبك"; const n=el("small","mut","اضغط للعودة"); n.style.display="block"; w.append(n); w.onclick=e=>{ e.stopPropagation(); seatBack(); }; }
+  else if(pl&&pl.uid==="bot"&&cur&&cur.status==="playing"){ const n=el("small","mut","يلعب بدلاً عنه"); n.style.display="block"; w.append(n); }
+  return w; }
+
+/* ===================== Premium ID shop ===================== */
+function idPrice(n){ const s=String(n); let p=5000000; if(s.length<=3) p+=5000000; if(/^(\d)\1+$/.test(s)) p+=3000000; else if(s===s.split("").reverse().join("")) p+=1000000; if(/00$/.test(s)) p+=1000000; if(/^[1-9]0+$/.test(s)) p+=2000000; return p; }
+async function idTaken(n){ const d=await db.doc("ids/"+n).get(); if(d.exists) return true; const q=await db.collection("profiles").where("pid","==",n).limit(1).get(); return !q.empty; }
+async function idBuy(n){ n=Math.floor(+n); if(!(n>=103&&n<=9999999)) return toast("اكتب رقماً من 103 فما فوق");
+  if(prof.pid===n) return toast("هذا هو رقمك الحالي");
+  if(await idTaken(n)) return toast("هذا الرقم مباع");
+  const price=idPrice(n); if(!confirm("شراء ID "+n+" بسعر "+fmtc(price)+" ؟")) return;
+  if(coins<price) return toast("رصيدك لا يكفي");
+  try{ await db.runTransaction(async tx=>{ const r=db.doc("ids/"+n), s=await tx.get(r); if(s.exists) throw new Error("taken"); tx.set(r,{uid:uid,t:Date.now()}); }); }
+  catch(e){ return toast("هذا الرقم مباع"); }
+  if(!(await spend(price,"id"))){ try{ await db.doc("ids/"+n).delete(); }catch(_){} return; }
+  try{ await db.doc("profiles/"+uid).update({pid:n}); prof.pid=n; toast("🎉 أصبح ID الخاص بك: "+n); }
+  catch(e){ try{ await setCoins(coins+price); }catch(_){} toast("تعذّر تغيير الـ ID — أُعيدت النقاط"); }
+  render(); }
+function renderIdShop(a){
+  const bal=el("div","card"); bal.style.cssText="display:flex;justify-content:space-between;align-items:center"; bal.append(el("span","mut","رصيدك"),el("b",null,"🪙 "+fmtc(coins))); a.append(bal);
+  a.append(el("p","mut","اختر رقماً مميزاً من 103 فما فوق ليصبح ID دائماً لك. السعر يبدأ من 5 مليون حسب جمال الرقم، والرقم المباع لا يُشترى مرة أخرى."));
+  const g=el("div"); g.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px";
+  for(let n=103;n<=112;n++){ const c=el("button"); c.style.cssText="background:var(--card);border:1.5px solid var(--gold);border-radius:14px;padding:12px 6px;color:var(--tx);position:relative;cursor:pointer";
+    const num=el("div",null,String(n)); num.style.cssText="font-size:24px;font-weight:900;direction:ltr"; const pr=el("div","mut","🪙 "+fmtc(idPrice(n))); pr.style.fontSize="13px"; const st=el("div","mut","..."); st.style.fontSize="12px";
+    c.append(num,pr,st); c.onclick=()=>idBuy(n); g.append(c);
+    idTaken(n).then(t=>{ st.textContent=t?"❌ مباع":"✅ متاح"; if(t){ c.style.opacity=".5"; c.onclick=()=>toast("هذا الرقم مباع"); } }).catch(()=>{ st.textContent=""; }); }
+  a.append(g);
+  const row=el("div"); row.style.cssText="display:flex;gap:8px;align-items:center;margin-top:8px";
+  const inp=el("input"); inp.type="number"; inp.placeholder="اكتب رقماً آخر"; inp.style.cssText="flex:1;padding:10px;border-radius:12px;border:1px solid var(--gold);background:var(--card);color:var(--tx);font-size:16px";
+  const chk=el("button","btn alt","تحقق");
+  const out=el("div","mut"); out.style.cssText="margin:8px 0;min-height:22px";
+  chk.onclick=async()=>{ const n=Math.floor(+inp.value); if(!(n>=103)) return out.textContent="اكتب رقماً من 103 فما فوق"; out.textContent="..."; const t=await idTaken(n); out.textContent=(t?"❌ مباع":"✅ متاح")+" • السعر 🪙 "+fmtc(idPrice(n)); if(!t){ const b=el("button","btn","شراء"); b.style.marginTop="6px"; b.onclick=()=>idBuy(n); out.append(el("div"),b); } };
+  row.append(inp,chk); a.append(row,out);
+}
 function renderShop(a){
   const tabs=el("div","gtabs"); tabs.style.marginBottom="4px";
-  [["frames","🖼️ الإطارات"],["verify","✔ التوثيق"],["badges","🏅 الشارات"]].forEach(([k,t])=>{ const b=el("button",shopTab===k?"on":"",t); b.onclick=()=>{ shopTab=k; render(); }; tabs.append(b); }); a.append(tabs);
+  [["frames","🖼️ الإطارات"],["verify","✔ التوثيق"],["badges","🏅 الشارات"],["ids","🆔 ID مميز"]].forEach(([k,t])=>{ const b=el("button",shopTab===k?"on":"",t); b.onclick=()=>{ shopTab=k; render(); }; tabs.append(b); }); a.append(tabs); if(shopTab==="ids"){ renderIdShop(a); return; }
   if(shopTab!=="badges"){ const bal=el("div","card"); bal.style.cssText="display:flex;justify-content:space-between;align-items:center"; bal.append(el("span","mut","رصيدك"),el("b",null,"🪙 "+fmtc(coins))); a.append(bal);
     a.append(el("p","mut","كل عنصر يُشترى لمدة شهر (30 يوماً) ثم ينتهي، ويمكنك شراؤه من جديد بعد انتهائه.")); }
   const E=prof.exp||{};
@@ -3877,23 +3931,23 @@ const LC={red:"#e8392b",green:"#14b548",yellow:"#f5b90d",blue:"#1f86ee"}, CN={re
 const BASEO={red:[9,0],green:[0,0],yellow:[0,9],blue:[9,9]}, SLOT=[[2,2],[2,4],[4,2],[4,4]], FIN={red:[8.3,7.5],green:[7.5,6.7],yellow:[6.7,7.5],blue:[7.5,8.3]};
 let cur=null, unsubGame=null, botT=null, gameOv=null, gkind="";
 const gpath=()=>"tables/"+gtid;
-const saveGame=s=>db.doc(gpath()).set(s);
+const saveGame=s=>{ s.tAt=Date.now(); return db.doc(gpath()).set(s); };
 const meP=()=>({uid,name:prof.name,emoji:prof.emoji});
 const clone=o=>JSON.parse(JSON.stringify(o));
 function chatNote(t){}
 let gameRedraw=null;
-function closeGame(){ if(unsubGame){ unsubGame(); unsubGame=null; } clearTimeout(botT); rndStop(); domClear(); if(gameOv){ gameOv.remove(); gameOv=null; } cur=null; gameRedraw=null; crReset(); bilReset(); l3Dispose(); gcStop(); }
+function closeGame(){ if(unsubGame){ unsubGame(); unsubGame=null; } clearTimeout(botT); rndStop(); domClear(); if(gameOv){ gameOv.remove(); gameOv=null; } cur=null; gameRedraw=null; autoStop(); crReset(); bilReset(); l3Dispose(); gcStop(); }
 function openTable(id,kind){
   closeGame(); gtid=id; gkind=kind; lastRollN=null; LASTV={}; LB=null; domReset(); let lastSig=""; const o=el("div","ov"), p=el("div","gpanel gbox"); o.append(p); document.body.append(o); gameOv=o;
   const draw=()=>{ p.innerHTML=""; p.classList.toggle("lpurp",kind==="ludo"); p.classList.toggle("gdom",kind==="domino"); p.append(el("div","pgrab"));
     const h=el("div","gh"), x=el("button","rb","✕"); x.onclick=()=>{ if(cur&&cur.mode==="random"&&cur.status==="waiting"&&cur.host===uid) endTable(); else closeGame(); };
-    const ti=el("div","gh-t"); if(kind==="domino") ti.innerHTML=domMiniSvg()+" دومينو"; else ti.textContent=({ludo:"🎲 لودو",xo:"❌⭕ إكس أو",carrom:"🎯 كيرم",snk:"🐍 السلم والثعبان",bil:"🎱 البلياردو"})[kind]; h.append(ti,el("span","sp")); if(GC.key) h.append(gcBtn()); h.append(x); p.append(h);
+    const ti=el("div","gh-t"); if(kind==="domino") ti.innerHTML=domMiniSvg()+" دومينو"; else ti.textContent=({ludo:"🎲 لودو",xo:"❌⭕ إكس أو",carrom:"🎯 كيرم",snk:"🐍 السلم والثعبان",bil:"🎱 البلياردو"})[kind]; h.append(ti,el("span","sp")); if(GC.key) h.append(gcBtn()); h.append(x); p.append(h); const atx=el("div"); atx.id="atimer"; atx.style.cssText="text-align:center;font-weight:900;color:#fde68a;min-height:18px;margin:2px 0"; p.append(atx);
     const b=el("div","gbody"); p.append(b); if(kind==="ludo") drawLudo(b); else if(kind==="carrom") drawCarrom(b); else if(kind==="domino") drawDomino(b); else if(kind==="snk") drawSnk(b); else if(kind==="bil") drawBil(b); else drawXO(b); };
   gameRedraw=draw; p.append(el("p","mut","جارٍ التحميل…"));
   unsubGame=db.doc(gpath()).onSnapshot(sn=>{ cur=sn.exists?sn.data():null; try{ gcSetup(cur); }catch(e){}
     const sg=cur?JSON.stringify(Object.assign({},cur,{hb:0,claims:0,offer:0,ack:0})):"";
     if(!(cur&&cur.mode==="random"&&cur.status==="waiting"&&sg===lastSig)) draw(); lastSig=sg;
-    botTick(); domTick(cur); checkWin(); rndHost(); });
+    botTick(); domTick(cur); checkWin(); rndHost(); autoCheck(); });
 }
 const freshLudo=()=>({kind:"ludo",status:"waiting",host:uid,players:{red:meP()},order:[],turn:"",dice:0,phase:"roll",tokens:{},winner:"",created:Date.now(),hostName:prof.name});
 async function ludoRoll(st){
@@ -4043,7 +4097,7 @@ function throwDie(wrap,cube,sh,to){
     if(u<1) requestAnimationFrame(step); else { wrap.style.transform=""; wrap.style.animation=""; poseCube(cube,to,false); if(sh){ sh.style.transform=""; sh.style.opacity=""; } } };
   requestAnimationFrame(step);
 }
-function ptag(pl,sz){ const pp=PROFS[pl.uid]||{}, w=el("span","ptag"), a=el("span","pav2"); a.style.width=sz+"px"; a.style.height=sz+"px"; a.style.fontSize=Math.round(sz*.55)+"px"; setAv(a,pl.emoji||pp.emoji||"👤",pp.photo);
+function ptag0(pl,sz){ const pp=PROFS[pl.uid]||{}, w=el("span","ptag"), a=el("span","pav2"); a.style.width=sz+"px"; a.style.height=sz+"px"; a.style.fontSize=Math.round(sz*.55)+"px"; setAv(a,pl.emoji||pp.emoji||"👤",pp.photo);
   const nm=el("span","ptn",pl.name); if(AV(pp)&&VCOL[AV(pp)]) nm.append(" ",vbadge(AV(pp),Math.round(sz*.5))); w.append(frameWrap(a,AF(pp),2),nm); return w; }
 
 /* ===================== Snakes & ladders (snk) ===================== */
@@ -4068,8 +4122,8 @@ function drawSnk(b){
   const bar=el("div","lbar");
   ["A","B"].forEach(k=>{ const pl=st.players[k]; if(!pl) return; const d=el("div","lpl"+(st.turn===k&&st.status==="playing"?" on":"")); d.append(ptag(pl,26),el("small",null,"المربع "+(st.pos[k]||0))); bar.append(d); });
   b.append(bar);
-  b.append(snkCanvas(st));
-  b.append(el("div","snk-dice",st.dice?String(st.dice):"🎲"));
+  b.append(snkMake(st));
+  { const dv=el("div","snk-dice",st.dice?String(st.dice):"🎲"); if(SNKA.anim) dv.classList.add("spin"); b.append(dv); }
   if(st.status==="playing"){ const pl=st.players[st.turn]||{}, mine=pl.uid===uid;
     b.append(el("p",null, mine?"دورك — اضغط لرمي النرد":"دور "+(pl.name||"")+" …"));
     if(mine){ const bt=el("button","btn full","🎲 ارمِ النرد"); bt.onclick=snkThrow; b.append(bt); } }
@@ -4092,7 +4146,22 @@ function snkSnake(c,head,tail){ const dx=tail.x-head.x, dy=tail.y-head.y, L=Math
   const t=pt(1); c.fillStyle="#15803d"; c.beginPath(); c.arc(t.x,t.y,9,0,6.283); c.fill();
   c.fillStyle="#15803d"; c.beginPath(); c.arc(head.x,head.y,18,0,6.283); c.fill();
   [-7,7].forEach(ex=>{ c.fillStyle="#fff"; c.beginPath(); c.arc(head.x+ex,head.y-6,6,0,6.283); c.fill(); c.fillStyle="#111"; c.beginPath(); c.arc(head.x+ex+1,head.y-6,3,0,6.283); c.fill(); }); }
-function snkCanvas(st){ const cv=document.createElement("canvas"); cv.width=640; cv.height=640; cv.className="snkc"; const c=cv.getContext("2d");
+
+const SNKA={seq:-1,turn:"",pos:null,anim:null,raf:0,cv:null,st:null};
+function snkMake(st){
+  if(SNKA.seq===-1){ SNKA.seq=st.seq; SNKA.turn=st.turn; SNKA.pos=Object.assign({},st.pos); }
+  else if(st.seq!==SNKA.seq){ const who=SNKA.turn, old=(SNKA.pos||{})[who]||0, d=st.dice||0, cells=[];
+    if(d&&old+d<=100){ for(let i=1;i<=d;i++) cells.push(old+i); if(st.pos[who]!==old+d) cells.push(st.pos[who]); }
+    SNKA.seq=st.seq; SNKA.turn=st.turn; SNKA.pos=Object.assign({},st.pos);
+    if(cells.length){ cancelAnimationFrame(SNKA.raf); SNKA.anim={who:who,cells:cells,t0:0}; SNKA.st=st; SNKA.raf=requestAnimationFrame(snkLoop); } }
+  const cv=document.createElement("canvas"); cv.width=640; cv.height=640; cv.className="snkc"; SNKA.cv=cv; SNKA.st=st;
+  let P=null; if(SNKA.anim){ P=Object.assign({},st.pos); P[SNKA.anim.who]=(SNKA.pos||{})[SNKA.anim.who]||0; }
+  snkPaint(cv,st,P); return cv; }
+function snkLoop(now){ const A=SNKA.anim; if(!A) return; if(!A.t0) A.t0=now; const k=Math.floor((now-A.t0)/200);
+  if(k>=A.cells.length){ SNKA.anim=null; if(SNKA.cv&&SNKA.st) snkPaint(SNKA.cv,SNKA.st,null); return; }
+  const P=Object.assign({},SNKA.st.pos); P[A.who]=A.cells[k]; if(SNKA.cv) snkPaint(SNKA.cv,SNKA.st,P); SNKA.raf=requestAnimationFrame(snkLoop); }
+function snkCanvas(st,P0){ const cv=document.createElement("canvas"); cv.width=640; cv.height=640; cv.className="snkc"; snkPaint(cv,st,P0); return cv; }
+function snkPaint(cv,st,P0){ const P=P0||st.pos; const c=cv.getContext("2d"); c.clearRect(0,0,640,640);
   for(let r=0;r<10;r++) for(let k=0;k<10;k++){ const n=r%2===0?r*10+k+1:r*10+(10-k), x=k*64, y=(9-r)*64;
     c.fillStyle=(r+k)%2?"#fde047":"#f59e0b"; c.fillRect(x,y,64,64);
     c.strokeStyle="rgba(120,53,15,.4)"; c.lineWidth=1; c.strokeRect(x+.5,y+.5,63,63);
@@ -4102,7 +4171,7 @@ function snkCanvas(st){ const cv=document.createElement("canvas"); cv.width=640;
   for(let r=0;r<10;r++) for(let k=0;k<10;k++){ const n=r%2===0?r*10+k+1:r*10+(10-k), x=k*64, y=(9-r)*64;
     c.font="bold 20px Cairo,system-ui,sans-serif"; c.textAlign="left"; c.textBaseline="top"; c.lineWidth=4; c.strokeStyle="#fff"; c.strokeText(String(n),x+5,y+4); c.fillStyle="#e11d74"; c.fillText(String(n),x+5,y+4); }
   const tk={A:"#ef4444",B:"#3b82f6"};
-  ["A","B"].forEach((k,i)=>{ const n=st.pos[k]||0; if(!n) return; const q=snkCen(n), off=(st.pos.A===st.pos.B)?(i?10:-10):0;
+  ["A","B"].forEach((k,i)=>{ const n=P[k]||0; if(!n) return; const q=snkCen(n), off=(P.A===P.B)?(i?10:-10):0;
     c.fillStyle="rgba(0,0,0,.35)"; c.beginPath(); c.arc(q.x+off+2,q.y+4,18,0,6.283); c.fill();
     c.fillStyle=tk[k]; c.beginPath(); c.arc(q.x+off,q.y,18,0,6.283); c.fill(); c.lineWidth=3; c.strokeStyle="#fff"; c.stroke(); });
   return cv; }
@@ -4116,7 +4185,7 @@ function bilInitB(){ const b=[]; for(let i=0;i<16;i++) b.push({i:i,x:0,y:0,on:fa
   BIL_RACK.forEach((row,k)=>row.forEach((id,j)=>{ b[id]={i:id,x:1.5+k*.0522,y:.5+(j-k/2)*.06,on:true}; })); return b; }
 const freshBil=()=>({kind:"bil",status:"waiting",host:uid,hostName:prof.name,players:{A:meP()},b:bilInitB(),grp:{A:"",B:""},turn:"A",winner:"",seq:0,created:Date.now()});
 function bilSim(balls,ang,pow){
-  const B=balls.map(q=>({i:q.i,x:q.x,y:q.y,vx:0,vy:0,on:q.on})), c=B[0], sp=.35+pow*2.4, R=BLX_R, dt=1/240, f=Math.pow(.42,dt);
+  const B=balls.map(q=>({i:q.i,x:q.x,y:q.y,vx:0,vy:0,on:q.on})), c=B[0], sp=.6+pow*3.2, R=BLX_R, dt=1/240, f=Math.pow(.5,dt);
   c.vx=Math.cos(ang)*sp; c.vy=Math.sin(ang)*sp;
   const frames=[], pocketed=[], snap=()=>B.map(q=>[q.x,q.y,q.on?1:0]);
   frames.push(snap());
@@ -4127,7 +4196,7 @@ function bilSim(balls,ang,pow){
     for(let a=0;a<16;a++){ const qa=B[a]; if(!qa.on) continue; for(let b2=a+1;b2<16;b2++){ const qb=B[b2]; if(!qb.on) continue;
       const dx=qb.x-qa.x, dy=qb.y-qa.y, d=Math.hypot(dx,dy); if(d<=0||d>=2*R) continue;
       const nx=dx/d, ny=dy/d, ov=(2*R-d)/2; qa.x-=nx*ov; qa.y-=ny*ov; qb.x+=nx*ov; qb.y+=ny*ov;
-      const av=(qa.vx-qb.vx)*nx+(qa.vy-qb.vy)*ny; if(av>0){ const k=(1+.95)/2*av; qa.vx-=k*nx; qa.vy-=k*ny; qb.vx+=k*nx; qb.vy+=k*ny; } } }
+      const av=(qa.vx-qb.vx)*nx+(qa.vy-qb.vy)*ny; if(av>0){ const k=(1+.97)/2*av; qa.vx-=k*nx; qa.vy-=k*ny; qb.vx+=k*nx; qb.vy+=k*ny; } } }
     let mv=false; for(const q of B){ if(q.on&&(q.vx||q.vy)){ mv=true; break; } }
     if(s%4===3) frames.push(snap());
     if(!mv) break; }
@@ -4200,7 +4269,7 @@ function drawBil(b){
   if(st.status==="waiting"){ gWaiting(b,st,"🎱 "+st.players.A.name+" بانتظار لاعب…"); return; }
   bilEnsure();
   const bar=el("div","lbar"), LB2={r:"🔴 أحمر",y:"🟡 أصفر"};
-  ["A","B"].forEach(k=>{ const pl=st.players[k]; if(!pl) return; const d=el("div","lpl"+(st.turn===k&&st.status==="playing"?" on":"")); d.append(ptag(pl,26),el("small",null,LB2[(st.grp||{})[k]]||"—")); bar.append(d); });
+  ["A","B"].forEach(k=>{ const pl=st.players[k]; if(!pl) return; const d=el("div","lpl"+(st.turn===k&&st.status==="playing"?" on":"")); const gg=(st.grp||{})[k]; const left=gg?st.b.filter(q=>q.on&&q.i!==0&&q.i!==8&&bgrp(q.i)===gg).length:7; d.append(ptag(pl,26),el("small",null,(LB2[gg]||"—")+(gg?" • دخل "+(7-left)+"/7":""))); bar.append(d); });
   b.append(bar); if(BLX.cv.parentNode) BLX.cv.remove(); b.append(BLX.cv);
   bilRender();
   const pl=st.players[st.turn]||{};
