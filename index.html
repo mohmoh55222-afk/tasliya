@@ -1330,6 +1330,8 @@ body.kb .room-screen *,body.kb .room-screen *::before,body.kb .room-screen *::af
 .cn-dark,.cn-vig,.cn-grain{display:none!important}
 .cn-rays{animation:cnrs var(--T) ease both!important;transform:none!important;opacity:.5!important}
 .cn-glow{mix-blend-mode:normal!important;opacity:.45!important}
+
+.cn-bar{display:none!important}
 </style>
 </head>
 <body>
@@ -2451,7 +2453,7 @@ function openRoom(r){
   unsubMsgs=db.collection("rooms/"+r.id+"/msgs").where("t",">=",joinT).orderBy("t","asc").limit(300).onSnapshot(s=>{msgs=s.docs.map(d=>d.data()).filter(m=>m.t>=joinT); drawChat(); try{ s.docChanges().forEach(ch=>{ if(ch.type==="added"){ const m=ch.doc.data(); if(m.type==="gift"&&m.t>=joinT&&Date.now()-m.t<10000) giftPop(m); } }); }catch(_){} });
   unsubSeats=db.collection("rooms/"+r.id+"/seats").onSnapshot(s=>{seats={}; s.docs.forEach(d=>seats[d.id]=d.data()); drawSeats();});
   unsubRoomDoc=db.doc("rooms/"+r.id).onSnapshot(sn=>{ if(!room||room.id!==r.id) return; if(!sn.exists){ toast("تم حذف الغرفة"); closeRoom(); return; } const v=document.getElementById("mi"), val=v?v.value:""; room={...room,...sn.data(),id:r.id}; render(); const n=document.getElementById("mi"); if(n) n.value=val; if(window.__modDraw) window.__modDraw(); });
-  render(); finalizeTops(r); startPres(); presOn(); startNotif(); rlWatch(); setTimeout(()=>{ try{ if(!Object.keys(GIFT_MP4).length&&!(navigator.connection&&navigator.connection.saveData)) fetch("fx.js?v="+ASSET_V).then(r=>r.arrayBuffer()).catch(()=>{}); }catch(_){} },6000);
+  render(); finalizeTops(r); startPres(); presOn(); startNotif(); rlWatch(); setTimeout(()=>{ try{ if(!Object.keys(GIFT_MP4).length&&!(navigator.connection&&navigator.connection.saveData)) loadAsset("fx.js",()=>GIFT_MP4); }catch(_){} },6000);
   if(unsubKick){ unsubKick(); } unsubKick=db.doc("rooms/"+r.id+"/kicks/"+uid).onSnapshot(sn=>{ if(sn.exists&&sn.data().t>=joinT-1000&&room&&room.id===r.id){ toast("تم طردك من الغرفة"); closeRoom(); } });
 }
 function closeRoom(){ replyTo=null; Object.keys(TRK_URL).forEach(k=>{ try{ URL.revokeObjectURL(TRK_URL[k]); }catch(_){} delete TRK_URL[k]; }); if(unsubKick){ unsubKick(); unsubKick=null; } presOff(); musStop(); MUS={id:null,t0:0,on:false}; if(unsubMsgs) unsubMsgs(); if(unsubSeats) unsubSeats(); if(unsubRoomDoc) unsubRoomDoc(); rlStop(); dmClose(); room=null; { const gp=document.getElementById("gpops"); if(gp) gp.remove(); } render(); }
@@ -2660,7 +2662,7 @@ let GIFT_SFX={};
 const findGift=n=>(n.gid?GIFTS.find(g=>g[6]===n.gid):null)||GIFTS.find(g=>g[0]===n.emoji&&g[1]===n.name)||null;
 const FXI={rose:["petals","hearts"],heart:["hearts","sparkle"],clap:["sparkle","confetti"],bear:["hearts","confetti"],star:["twinkle","sparkle"],butterfly:["petals","twinkle","sparkle"],coffee:["steam","sparkle"],smile:["hearts","sparkle","confetti"],car:["streak","dust"],boat:["sparkle","twinkle"],mic:["sparkle","confetti","twinkle"],ball:["fire","confetti"],fireworks:["fireworks","fireworks","confetti"],crown:["sparkle","gold"],watch:["twinkle","sparkle"],lion:["gold","fire"],gcar:["streak","gold"],yacht:["sparkle","twinkle"],gmic:["sparkle","gold","twinkle"],gheart:["hearts","gold"],eagle:["streak","gold","sparkle"],gbouquet:["petals","gold","hearts"],gchest:["gold","gold","sparkle"],gstar:["twinkle","gold","sparkle"],rcrown:["fireworks","gold","sparkle"],supercar:["streak","fireworks","gold"],jet:["streak","fireworks","sparkle"],villa:["fireworks","gold","sparkle"],rwatch:["fireworks","twinkle","gold"],dheart:["hearts","fireworks","twinkle"],dragon:["fire","fireworks","gold"],ygrand:["fireworks","sparkle","twinkle"],treasure:["gold","gold","fireworks","sparkle"]};
 function recipients(){
-  const m=new Map(); m.set(room.owner,{uid:room.owner,name:room.ownerName,emoji:room.emoji||"🎙️",photo:room.photo||""});
+  const m=new Map();
   Object.values(seats).forEach(sd=>{ if(!m.has(sd.uid)) m.set(sd.uid,{uid:sd.uid,name:sd.name,emoji:sd.emoji,photo:sd.photo||""}); });
   presIn(room.id).forEach(q=>{ if(q.uid===uid||m.has(q.uid)) return; const P=PROFS[q.uid]||{}; m.set(q.uid,{uid:q.uid,name:q.name||P.name||"مستخدم",emoji:P.emoji||"🙂",photo:P.photo||""}); });
   return [...m.values()];
@@ -2738,7 +2740,7 @@ function userMenu(u,nm){ if(!u||!room) return; const P=PROFS[u]||{}, name=P.name
 function openGifts(preUid){
   const o=el("div","ov"); o.onclick=e=>{ if(e.target===o) o.remove(); };
   const p=el("div","gpanel"); o.append(p); document.body.append(o);
-  let rc=recipients(); const oth=rc.filter(r=>r.uid!==uid); if(oth.length) rc=oth; if(!rc.length){ o.remove(); return toast("لا يوجد أحد لإرسال الهدية إليه"); }
+  let rc=recipients(); rc=rc.filter(r=>r.uid!==uid); if(!rc.length){ o.remove(); return toast("لا يوجد أحد لإرسال الهدية إليه"); }
   let sel=new Set([(preUid&&rc.some(r=>r.uid===preUid))?preUid:rc[0].uid]), tier=0, pick=null, qty=1, sending=false;
   const labelOf=()=>{ const t=rc.filter(r=>sel.has(r.uid)); return (t.length===rc.length&&rc.length>1)?"الجميع":t.map(x=>x.name).join("، "); };
   const draw=()=>{
