@@ -1332,6 +1332,14 @@ body.kb .room-screen *,body.kb .room-screen *::before,body.kb .room-screen *::af
 .cn-glow{mix-blend-mode:normal!important;opacity:.45!important}
 
 .cn-bar{display:none!important}
+
+.snk-b{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;background:#1e1b4b;padding:4px;border-radius:12px;direction:ltr;margin:8px 0}
+.snk-c{position:relative;aspect-ratio:1;border-radius:4px;background:#f1f5f9;color:#334155;font-size:9px;overflow:hidden;padding:1px 2px}
+.snk-c.odd{background:#ddd6fe}
+.snk-c .tk{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:15px}
+.snk-c .lad,.snk-c .snk-s{position:absolute;right:0;bottom:0;font-size:12px;font-style:normal}
+.snk-dice{width:64px;height:64px;margin:10px auto;border-radius:16px;background:#fff;color:#111;font-size:34px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px #0008}
+.bilc{display:block;width:100%;height:auto;border-radius:14px;margin:6px 0;touch-action:none}
 </style>
 </head>
 <body>
@@ -3873,13 +3881,13 @@ const meP=()=>({uid,name:prof.name,emoji:prof.emoji});
 const clone=o=>JSON.parse(JSON.stringify(o));
 function chatNote(t){}
 let gameRedraw=null;
-function closeGame(){ if(unsubGame){ unsubGame(); unsubGame=null; } clearTimeout(botT); rndStop(); domClear(); if(gameOv){ gameOv.remove(); gameOv=null; } cur=null; gameRedraw=null; crReset(); l3Dispose(); gcStop(); }
+function closeGame(){ if(unsubGame){ unsubGame(); unsubGame=null; } clearTimeout(botT); rndStop(); domClear(); if(gameOv){ gameOv.remove(); gameOv=null; } cur=null; gameRedraw=null; crReset(); bilReset(); l3Dispose(); gcStop(); }
 function openTable(id,kind){
   closeGame(); gtid=id; gkind=kind; lastRollN=null; LASTV={}; LB=null; domReset(); let lastSig=""; const o=el("div","ov"), p=el("div","gpanel gbox"); o.append(p); document.body.append(o); gameOv=o;
   const draw=()=>{ p.innerHTML=""; p.classList.toggle("lpurp",kind==="ludo"); p.classList.toggle("gdom",kind==="domino"); p.append(el("div","pgrab"));
     const h=el("div","gh"), x=el("button","rb","✕"); x.onclick=()=>{ if(cur&&cur.mode==="random"&&cur.status==="waiting"&&cur.host===uid) endTable(); else closeGame(); };
-    const ti=el("div","gh-t"); if(kind==="domino") ti.innerHTML=domMiniSvg()+" دومينو"; else ti.textContent=({ludo:"🎲 لودو",xo:"❌⭕ إكس أو",carrom:"🎯 كيرم"})[kind]; h.append(ti,el("span","sp")); if(GC.key) h.append(gcBtn()); h.append(x); p.append(h);
-    const b=el("div","gbody"); p.append(b); if(kind==="ludo") drawLudo(b); else if(kind==="carrom") drawCarrom(b); else if(kind==="domino") drawDomino(b); else drawXO(b); };
+    const ti=el("div","gh-t"); if(kind==="domino") ti.innerHTML=domMiniSvg()+" دومينو"; else ti.textContent=({ludo:"🎲 لودو",xo:"❌⭕ إكس أو",carrom:"🎯 كيرم",snk:"🐍 السلم والثعبان",bil:"🎱 البلياردو"})[kind]; h.append(ti,el("span","sp")); if(GC.key) h.append(gcBtn()); h.append(x); p.append(h);
+    const b=el("div","gbody"); p.append(b); if(kind==="ludo") drawLudo(b); else if(kind==="carrom") drawCarrom(b); else if(kind==="domino") drawDomino(b); else if(kind==="snk") drawSnk(b); else if(kind==="bil") drawBil(b); else drawXO(b); };
   gameRedraw=draw; p.append(el("p","mut","جارٍ التحميل…"));
   unsubGame=db.doc(gpath()).onSnapshot(sn=>{ cur=sn.exists?sn.data():null; try{ gcSetup(cur); }catch(e){}
     const sg=cur?JSON.stringify(Object.assign({},cur,{hb:0,claims:0,offer:0,ack:0})):"";
@@ -4036,7 +4044,134 @@ function throwDie(wrap,cube,sh,to){
 }
 function ptag(pl,sz){ const pp=PROFS[pl.uid]||{}, w=el("span","ptag"), a=el("span","pav2"); a.style.width=sz+"px"; a.style.height=sz+"px"; a.style.fontSize=Math.round(sz*.55)+"px"; setAv(a,pl.emoji||pp.emoji||"👤",pp.photo);
   const nm=el("span","ptn",pl.name); if(AV(pp)&&VCOL[AV(pp)]) nm.append(" ",vbadge(AV(pp),Math.round(sz*.5))); w.append(frameWrap(a,AF(pp),2),nm); return w; }
-function gameIcon(k){ const D='<defs><filter id="gsh"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity=".5"/></filter>';
+
+/* ===================== Snakes & ladders (snk) ===================== */
+const SNK_L={1:38,4:14,9:31,21:42,28:84,36:44,51:67,71:91,80:100}, SNK_S={16:6,47:26,49:11,56:53,62:19,64:60,87:24,93:73,95:75,98:78};
+const freshSnk=()=>({kind:"snk",status:"waiting",host:uid,hostName:prof.name,players:{A:meP()},pos:{A:0,B:0},turn:"A",dice:0,winner:"",seq:0,created:Date.now()});
+function snkRoll(s){ if(s.status!=="playing") return false; const p=s.turn, d=1+Math.floor(Math.random()*6); s.dice=d; s.seq=(s.seq||0)+1;
+  let n=s.pos[p]+d; if(n>100) n=s.pos[p]; else if(SNK_L[n]) n=SNK_L[n]; else if(SNK_S[n]) n=SNK_S[n];
+  s.pos[p]=n; if(n===100){ s.status="done"; s.winner=p; s.doneAt=Date.now(); } else s.turn=p==="A"?"B":"A"; return true; }
+async function snkThrow(){ const st=cur&&cur.kind==="snk"?clone(cur):null; if(!st||st.status!=="playing"||st.players[st.turn].uid!==uid) return; snkRoll(st); await saveGame(st); }
+function gWaiting(b,st,title){
+  if(waitMode(b,st)) return;
+  const inGame=["A","B"].some(k=>st.players[k]&&st.players[k].uid===uid), isHost=st.host===uid;
+  b.append(el("p",null,title+" • الدخول "+ENTRY+" 🪙"));
+  if(!inGame){ const j=el("button","btn full","انضم كلاعب ⚫"); j.onclick=async()=>{ if(!(await payEntry())) return; const s2=clone(st); seatSecond(s2,meP()); saveGame(s2); }; b.append(j); }
+  if(isHost){ const k=el("button","btn alt full","🤖 العب ضد الكمبيوتر"); k.style.marginTop="8px"; k.onclick=()=>{ const s2=clone(st); seatSecond(s2,BOT_PL); saveGame(s2); }; b.append(k);
+    const cn=el("button","btn alt full","إلغاء"); cn.style.marginTop="8px"; cn.onclick=endTable; b.append(cn); }
+}
+function drawSnk(b){
+  const st=cur&&cur.kind==="snk"?cur:null;
+  if(!st){ b.append(el("p","mut","انتهت هذه الطاولة أو حُذفت.")); const x=el("button","btn full","إغلاق"); x.onclick=closeGame; b.append(x); return; }
+  if(st.status==="waiting"){ gWaiting(b,st,"🟢 "+st.players.A.name+" بانتظار لاعب…"); return; }
+  const bar=el("div","lbar");
+  ["A","B"].forEach(k=>{ const pl=st.players[k]; if(!pl) return; const d=el("div","lpl"+(st.turn===k&&st.status==="playing"?" on":"")); d.append(ptag(pl,26),el("small",null,"المربع "+(st.pos[k]||0))); bar.append(d); });
+  b.append(bar);
+  const bd=el("div","snk-b"), toks={A:"🔴",B:"🔵"};
+  for(let r=9;r>=0;r--) for(let c=0;c<10;c++){ const n=r%2===0?r*10+c+1:r*10+(10-c);
+    const cell=el("div","snk-c"+((r+c)%2?" odd":"")); cell.append(el("small",null,String(n)));
+    if(SNK_L[n]) cell.append(el("i","lad","🪜")); if(SNK_S[n]) cell.append(el("i","snk-s","🐍"));
+    ["A","B"].forEach(k=>{ if((st.pos[k]||0)===n) cell.append(el("span","tk",toks[k])); });
+    bd.append(cell); }
+  b.append(bd);
+  b.append(el("div","snk-dice",st.dice?String(st.dice):"🎲"));
+  if(st.status==="playing"){ const pl=st.players[st.turn]||{}, mine=pl.uid===uid;
+    b.append(el("p",null, mine?"دورك — اضغط لرمي النرد":"دور "+(pl.name||"")+" …"));
+    if(mine){ const bt=el("button","btn full","🎲 ارمِ النرد"); bt.onclick=snkThrow; b.append(bt); } }
+  else if(st.status==="done"){ const w=st.players[st.winner]||{}; b.append(el("p",null,"🏆 فاز "+(w.name||"")+"!")); }
+}
+
+/* ===================== Billiards (bil) ===================== */
+const BLX={cv:null,ctx:null,drag:null,aim:null,anim:null,raf:0};
+const BLX_R=.03, BLX_PR=.058, BLX_P=[[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]];
+const BIL_RACK=[[1],[9,2],[3,8,10],[11,4,12,5],[13,6,14,15,7]];
+const bgrp=i=>(i===0||i===8)?"":(i<8?"r":"y");
+function bilInitB(){ const b=[]; for(let i=0;i<16;i++) b.push({i:i,x:0,y:0,on:false}); b[0]={i:0,x:.5,y:.5,on:true};
+  BIL_RACK.forEach((row,k)=>row.forEach((id,j)=>{ b[id]={i:id,x:1.5+k*.0522,y:.5+(j-k/2)*.06,on:true}; })); return b; }
+const freshBil=()=>({kind:"bil",status:"waiting",host:uid,hostName:prof.name,players:{A:meP()},b:bilInitB(),grp:{A:"",B:""},turn:"A",winner:"",seq:0,created:Date.now()});
+function bilSim(balls,ang,pow){
+  const B=balls.map(q=>({i:q.i,x:q.x,y:q.y,vx:0,vy:0,on:q.on})), c=B[0], sp=.35+pow*2.4, R=BLX_R, dt=1/240, f=Math.pow(.42,dt);
+  c.vx=Math.cos(ang)*sp; c.vy=Math.sin(ang)*sp;
+  const frames=[], pocketed=[], snap=()=>B.map(q=>[q.x,q.y,q.on?1:0]);
+  frames.push(snap());
+  for(let s=0;s<240*12;s++){
+    for(const q of B){ if(!q.on) continue; q.x+=q.vx*dt; q.y+=q.vy*dt; q.vx*=f; q.vy*=f; if(Math.hypot(q.vx,q.vy)<.004){ q.vx=0; q.vy=0; } }
+    for(const q of B){ if(!q.on) continue; for(const [px,py] of BLX_P){ if(Math.hypot(q.x-px,q.y-py)<BLX_PR){ q.on=false; q.vx=0; q.vy=0; pocketed.push(q.i); break; } } }
+    for(const q of B){ if(!q.on) continue; if(q.x<R){ q.x=R; q.vx=-q.vx*.85; } if(q.x>2-R){ q.x=2-R; q.vx=-q.vx*.85; } if(q.y<R){ q.y=R; q.vy=-q.vy*.85; } if(q.y>1-R){ q.y=1-R; q.vy=-q.vy*.85; } }
+    for(let a=0;a<16;a++){ const qa=B[a]; if(!qa.on) continue; for(let b2=a+1;b2<16;b2++){ const qb=B[b2]; if(!qb.on) continue;
+      const dx=qb.x-qa.x, dy=qb.y-qa.y, d=Math.hypot(dx,dy); if(d<=0||d>=2*R) continue;
+      const nx=dx/d, ny=dy/d, ov=(2*R-d)/2; qa.x-=nx*ov; qa.y-=ny*ov; qb.x+=nx*ov; qb.y+=ny*ov;
+      const av=(qa.vx-qb.vx)*nx+(qa.vy-qb.vy)*ny; if(av>0){ const k=(1+.95)/2*av; qa.vx-=k*nx; qa.vy-=k*ny; qb.vx+=k*nx; qb.vy+=k*ny; } } }
+    let mv=false; for(const q of B){ if(q.on&&(q.vx||q.vy)){ mv=true; break; } }
+    if(s%4===3) frames.push(snap());
+    if(!mv) break; }
+  frames.push(snap());
+  return {frames:frames,pocketed:pocketed,balls:B.map(q=>({i:q.i,x:q.x,y:q.y,on:q.on}))};
+}
+function bilRules(st,sh,pocketed){
+  const ot=sh==="A"?"B":"A", cueIn=pocketed.includes(0), blk=pocketed.includes(8), pk=pocketed.filter(i=>i!==0&&i!==8);
+  if(!st.grp.A&&!st.grp.B&&pk.length){ const g0=bgrp(pk[0]); st.grp[sh]=g0; st.grp[ot]=g0==="r"?"y":"r"; }
+  const g=st.grp[sh], left=gr=>st.b.some(q=>q.on&&q.i!==0&&q.i!==8&&bgrp(q.i)===gr);
+  if(blk){ st.status="done"; st.winner=(!cueIn&&g&&!left(g))?sh:ot; st.doneAt=Date.now(); return; }
+  if(cueIn){ st.b[0].on=true; st.b[0].x=.5; st.b[0].y=.5; }
+  const own=!!g&&pk.some(i=>bgrp(i)===g);
+  if(cueIn||!own) st.turn=ot;
+}
+function bilBot(st){
+  const cue=st.b[0], g=st.grp[st.turn]; let tg=st.b.filter(q=>q.on&&q.i!==0&&q.i!==8&&(!g||bgrp(q.i)===g));
+  if(!tg.length) tg=st.b.filter(q=>q.on&&q.i===8);
+  let best=null;
+  tg.forEach(t=>BLX_P.forEach(([px,py])=>{ const dx=px-t.x, dy=py-t.y, d=Math.hypot(dx,dy)||1, ux=dx/d, uy=dy/d, gx=t.x-ux*2*BLX_R, gy=t.y-uy*2*BLX_R, dc=Math.hypot(gx-cue.x,gy-cue.y), sc=dc+d*.5;
+    if(!best||sc<best.sc) best={sc:sc,ang:Math.atan2(gy-cue.y,gx-cue.x),dc:dc}; }));
+  if(!best) return {ang:Math.random()*6.283,pow:.6};
+  return {ang:best.ang,pow:Math.min(1,.3+best.dc*.6+Math.random()*.1)};
+}
+function bilCanShoot(){ const st=cur; return !!st&&st.kind==="bil"&&st.status==="playing"&&!BLX.anim&&!!st.players[st.turn]&&st.players[st.turn].uid===uid; }
+function bilShoot(ang,pow,isBot){
+  const st=cur&&cur.kind==="bil"?cur:null; if(!st||st.status!=="playing"||BLX.anim) return;
+  const sh=st.turn; if(!isBot&&(!st.players[sh]||st.players[sh].uid!==uid)) return;
+  const res=bilSim(st.b,ang,pow); BLX.anim={frames:res.frames,k:0,res:res,by:sh,st:clone(st),t0:0}; BLX.raf=requestAnimationFrame(bilPlay);
+}
+function bilPlay(now){ const A=BLX.anim; if(!A) return; if(!A.t0) A.t0=now; const k=Math.floor((now-A.t0)/(1000/60));
+  if(k>=A.frames.length-1){ A.k=A.frames.length-1; bilRender(); bilFinish(); return; }
+  A.k=k; bilRender(); BLX.raf=requestAnimationFrame(bilPlay); }
+async function bilFinish(){ const A=BLX.anim; BLX.anim=null; if(!A) return; const st=A.st; st.b=A.res.balls; bilRules(st,A.by,A.res.pocketed); st.seq=(st.seq||0)+1; try{ await saveGame(st); }catch(e){} }
+function bilPaint(src,aim){ const c=BLX.ctx; if(!c) return; const W=640,H=334,M=14,S=306, X=x=>M+x*S, Y=y=>M+y*S;
+  c.clearRect(0,0,W,H); c.fillStyle="#5c3a1e"; c.fillRect(0,0,W,H);
+  c.fillStyle="#0f7a4b"; c.fillRect(X(0),Y(0),2*S,S);
+  BLX_P.forEach(([px,py])=>{ c.beginPath(); c.arc(X(px),Y(py),BLX_PR*S,0,6.283); c.fillStyle="#050505"; c.fill(); });
+  if(aim){ const cq=src[0], cx=X(cq[0]), cy=Y(cq[1]), len=40+aim.pow*160; c.strokeStyle="rgba(255,255,255,.75)"; c.lineWidth=2; c.setLineDash([6,6]); c.beginPath(); c.moveTo(cx,cy); c.lineTo(cx+Math.cos(aim.ang)*len,cy+Math.sin(aim.ang)*len); c.stroke(); c.setLineDash([]); }
+  src.forEach((q,idx)=>{ if(q[2]!==1) return; const px=X(q[0]), py=Y(q[1]), r=BLX_R*S;
+    const col=idx===0?"#ffffff":idx===8?"#111111":idx<8?"#dc2626":"#facc15";
+    c.beginPath(); c.arc(px,py,r,0,6.283); c.fillStyle=col; c.fill(); c.strokeStyle="rgba(0,0,0,.45)"; c.lineWidth=1; c.stroke();
+    if(idx>0){ c.fillStyle=idx>8?"#000":"#fff"; c.font="bold 9px sans-serif"; c.textAlign="center"; c.textBaseline="middle"; c.fillText(String(idx),px,py); } });
+}
+function bilRender(){ if(!BLX.ctx) return; let src=null; if(BLX.anim) src=BLX.anim.frames[BLX.anim.k||0]; else if(cur&&cur.kind==="bil"&&cur.b) src=cur.b.map(q=>[q.x,q.y,q.on?1:0]); if(src) bilPaint(src,BLX.drag?BLX.aim:null); }
+function bilEnsure(){ if(BLX.cv) return; const cv=document.createElement("canvas"); cv.width=640; cv.height=334; cv.className="bilc"; BLX.cv=cv; BLX.ctx=cv.getContext("2d");
+  const pt=e=>{ const r=cv.getBoundingClientRect(), cx=(e.clientX-r.left)/r.width*640, cy=(e.clientY-r.top)/r.height*334; return {x:(cx-14)/306, y:(cy-14)/306}; };
+  cv.addEventListener("pointerdown",e=>{ if(!bilCanShoot()) return; BLX.drag=pt(e); try{ cv.setPointerCapture(e.pointerId); }catch(_){} });
+  cv.addEventListener("pointermove",e=>{ if(!BLX.drag) return; const p=pt(e), dx=BLX.drag.x-p.x, dy=BLX.drag.y-p.y, d=Math.hypot(dx,dy); BLX.aim={ang:Math.atan2(dy,dx),pow:Math.min(1,d/.35)}; bilRender(); });
+  const end=()=>{ const a=BLX.aim; BLX.drag=null; BLX.aim=null; bilRender(); if(a&&a.pow>.06) bilShoot(a.ang,a.pow,false); };
+  cv.addEventListener("pointerup",end); cv.addEventListener("pointercancel",()=>{ BLX.drag=null; BLX.aim=null; bilRender(); }); }
+function bilReset(){ cancelAnimationFrame(BLX.raf); BLX.cv=null; BLX.ctx=null; BLX.drag=null; BLX.aim=null; BLX.anim=null; }
+function drawBil(b){
+  const st=cur&&cur.kind==="bil"?cur:null;
+  if(!st){ b.append(el("p","mut","انتهت هذه الطاولة أو حُذفت.")); const x=el("button","btn full","إغلاق"); x.onclick=closeGame; b.append(x); return; }
+  if(st.status==="waiting"){ gWaiting(b,st,"🎱 "+st.players.A.name+" بانتظار لاعب…"); return; }
+  bilEnsure();
+  const bar=el("div","lbar"), LB2={r:"🔴 أحمر",y:"🟡 أصفر"};
+  ["A","B"].forEach(k=>{ const pl=st.players[k]; if(!pl) return; const d=el("div","lpl"+(st.turn===k&&st.status==="playing"?" on":"")); d.append(ptag(pl,26),el("small",null,LB2[(st.grp||{})[k]]||"—")); bar.append(d); });
+  b.append(bar); if(BLX.cv.parentNode) BLX.cv.remove(); b.append(BLX.cv);
+  bilRender();
+  const pl=st.players[st.turn]||{};
+  if(st.status==="done"){ const w=st.players[st.winner]||{}; b.append(el("p",null,"🏆 فاز "+(w.name||"")+"!")); }
+  else if(pl.uid===uid&&!BLX.anim) b.append(el("p","mut","دورك — اسحب من الطاولة للخلف ثم اتركه للتصويب"));
+  else b.append(el("p","mut","دور "+(pl.name||"")+" …"));
+}
+function newIcon(k){ const D='<defs><filter id="gsh2"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity=".5"/></filter></defs>';
+  if(k==="snk") return '<svg viewBox="0 0 100 100" width="100%" height="100%">'+D+'<g filter="url(#gsh2)"><rect x="8" y="8" width="84" height="84" rx="18" fill="#84cc16"/><rect x="22" y="22" width="56" height="56" rx="6" fill="#fef9c3"/><text x="50" y="62" font-size="32" text-anchor="middle">🐍</text></g></svg>';
+  return '<svg viewBox="0 0 100 100" width="100%" height="100%">'+D+'<g filter="url(#gsh2)"><circle cx="50" cy="50" r="44" fill="#0f766e"/><circle cx="50" cy="50" r="36" fill="#0f7a4b"/><circle cx="38" cy="46" r="8" fill="#fff"/><circle cx="60" cy="52" r="8" fill="#dc2626"/><circle cx="50" cy="36" r="8" fill="#facc15"/></g></svg>'; }
+function gameIcon(k){ if(k==="snk"||k==="bil") return newIcon(k); const D='<defs><filter id="gsh"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity=".5"/></filter>';
   if(k==="ludo") return '<svg viewBox="0 0 100 100" width="100%" height="100%">'+D+'<linearGradient id="d1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#e5e7eb"/></linearGradient><linearGradient id="d2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#aab3c2"/></linearGradient><linearGradient id="d3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dbe1ea"/><stop offset="1" stop-color="#8d97a8"/></linearGradient></defs><g filter="url(#gsh)"><polygon points="50,8 88,29 50,50 12,29" fill="url(#d1)"/><polygon points="12,29 50,50 50,93 12,71" fill="url(#d2)"/><polygon points="50,50 88,29 88,71 50,93" fill="url(#d3)"/></g><ellipse cx="50" cy="29" rx="6" ry="3.4" fill="#ef4444"/><g fill="#1f2937"><circle cx="22" cy="46" r="3.2"/><circle cx="31" cy="55" r="3.2"/><circle cx="40" cy="64" r="3.2"/><circle cx="22" cy="63" r="3.2"/><circle cx="40" cy="81" r="3.2"/><circle cx="62" cy="74" r="3.2"/><circle cx="78" cy="65" r="3.2"/><circle cx="62" cy="58" r="3.2"/><circle cx="78" cy="49" r="3.2"/><circle cx="70" cy="62" r="3.2"/></g></svg>';
   if(k==="xo") return '<svg viewBox="0 0 100 100" width="100%" height="100%">'+D+'<linearGradient id="x1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fecaca"/><stop offset=".5" stop-color="#ef4444"/><stop offset="1" stop-color="#991b1b"/></linearGradient><linearGradient id="o1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#bae6fd"/><stop offset=".5" stop-color="#3b82f6"/><stop offset="1" stop-color="#1e3a8a"/></linearGradient><linearGradient id="t1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#475569"/><stop offset="1" stop-color="#1e293b"/></linearGradient></defs><g filter="url(#gsh)"><rect x="8" y="10" width="84" height="80" rx="16" fill="url(#t1)"/><rect x="8" y="10" width="84" height="40" rx="16" fill="#fff" opacity=".1"/></g><path d="M24 26L44 46M44 26L24 46" stroke="url(#x1)" stroke-width="9" stroke-linecap="round"/><circle cx="68" cy="64" r="14" fill="none" stroke="url(#o1)" stroke-width="9"/><path d="M24 62L44 82M44 62L24 82" stroke="url(#x1)" stroke-width="9" stroke-linecap="round" opacity=".9"/><circle cx="68" cy="36" r="14" fill="none" stroke="url(#o1)" stroke-width="9" opacity=".9"/></svg>';
   if(k==="domino") return domIconSvg();
@@ -4149,6 +4284,8 @@ function botTick(){
   else if(st.kind==="carrom"){ const pl=st.players[st.turn]; if(!pl||pl.uid!=="bot"||st.anim||cr.sim) return;
     botT=setTimeout(()=>{ if(cur!==st||cr.sim) return; const m=carromBot(st); carromShoot(m.ang,m.pow,m.sx,"bot"); },1600); }
   else if(st.kind==="domino"){ domBotTick(st); }
+  else if(st.kind==="snk"){ const pl=st.players[st.turn]; if(!pl||pl.uid!=="bot") return; botT=setTimeout(()=>{ if(cur!==st) return; const s2=clone(st); snkRoll(s2); saveGame(s2); },1100); }
+  else if(st.kind==="bil"){ const pl=st.players[st.turn]; if(!pl||pl.uid!=="bot"||BLX.anim) return; botT=setTimeout(()=>{ if(cur!==st||BLX.anim) return; const m=bilBot(st); bilShoot(m.ang,m.pow,true); },1400); }
   else if(st.kind==="xo"){ const pl=st[st.turn]; if(!pl||pl.uid!=="bot") return;
     botT=setTimeout(async()=>{ if(cur!==st) return; const s2=clone(st); xoApply(s2,xoBot(s2.board,s2.turn)); await saveGame(s2); if(s2.status==="done") xoNote(s2); },900); }
 }
@@ -4264,11 +4401,12 @@ function winFx(title,sub,icon,kind){
 let winShown={};
 function checkWin(){ const st=cur; if(!st||st.status!=="done"||!st.doneAt||Date.now()-st.doneAt>30000) return;
   const key=gtid+":"+st.doneAt; if(winShown[key]) return; winShown[key]=1; let wu="", nm="";
-  if(st.kind==="ludo"&&st.winner&&st.players[st.winner]){ wu=st.players[st.winner].uid; nm=st.players[st.winner].name; }
+  if((st.kind==="snk"||st.kind==="bil")&&st.winner&&st.players[st.winner]){ wu=st.players[st.winner].uid; nm=st.players[st.winner].name; }
+  else if(st.kind==="ludo"&&st.winner&&st.players[st.winner]){ wu=st.players[st.winner].uid; nm=st.players[st.winner].name; }
   else if(st.kind==="xo"&&st.winner&&st.winner!=="draw"&&st[st.winner]){ wu=st[st.winner].uid; nm=st[st.winner].name; }
   else if((st.kind==="carrom"||st.kind==="domino")&&st.winner&&st.players[st.winner]){ wu=st.players[st.winner].uid; nm=st.players[st.winner].name; }
-  const GN={ludo:"لودو",xo:"إكس أو",carrom:"كيرم",domino:"دومينو"};
-  const inG=st.kind==="ludo"?Object.values(st.players||{}).some(q=>q.uid===uid):(st.kind==="carrom"||st.kind==="domino")?["A","B"].some(k=>st.players[k]&&st.players[k].uid===uid):[st.X,st.O].some(q=>q&&q.uid===uid);
+  const GN={ludo:"لودو",xo:"إكس أو",carrom:"كيرم",domino:"دومينو",snk:"السلم والثعبان",bil:"البلياردو"};
+  const inG=st.kind==="ludo"?Object.values(st.players||{}).some(q=>q.uid===uid):(st.kind==="carrom"||st.kind==="domino"||st.kind==="snk"||st.kind==="bil")?["A","B"].some(k=>st.players[k]&&st.players[k].uid===uid):[st.X,st.O].some(q=>q&&q.uid===uid);
   if(st.kind==="xo"&&st.winner==="draw"){ if(inG) winFx("تعادل!","انتهت المباراة بالتعادل في "+GN[st.kind],"🤝","draw"); return; }
   if(!nm) return;
   if(wu===uid) winFx("مبروك الفوز! 🎉","لقد فزت في لعبة "+GN[st.kind]+" — أحسنت يا بطل!","🏆","win");
@@ -4435,11 +4573,11 @@ GSI.rockets=()=>{ for(let i=0;i<3;i++){ nz(.2,.5,"highpass",1800,1,i*.5); nz(2,.
 Object.assign(FXI,{rheart:["hearts","fireworks","twinkle"],lips:["hearts","sparkle","fireworks"],flion:["fire","gold","fireworks"],fdragon:["fire","fireworks","gold"],ferrari:["streak","fireworks","gold"],rockets:["fire","gold","sparkle"]});
 setTimeout(()=>{ try{ if(/^https?:/.test(location.protocol)) Object.values(GIFT_VID).forEach(u=>fetch(u).catch(()=>{})); }catch(e){} },6000);
 /* ===================== games v2: hub • modes • random matchmaking • friend invites ===================== */
-const GAME_NAME={ludo:"لودو",xo:"إكس أو",carrom:"كيرم",domino:"دومينو"};
-const GAME_LIST=[["ludo","linear-gradient(135deg,#f97316,#ec4899)"],["xo","linear-gradient(135deg,#06b6d4,#6366f1)"],["carrom","linear-gradient(135deg,#16a34a,#ca8a04)"],["domino","linear-gradient(135deg,#d946ef,#6d28d9)"]];
+const GAME_NAME={ludo:"لودو",xo:"إكس أو",carrom:"كيرم",domino:"دومينو",snk:"السلم والثعبان",bil:"البلياردو"};
+const GAME_LIST=[["ludo","linear-gradient(135deg,#f97316,#ec4899)"],["xo","linear-gradient(135deg,#06b6d4,#6366f1)"],["carrom","linear-gradient(135deg,#16a34a,#ca8a04)"],["domino","linear-gradient(135deg,#d946ef,#6d28d9)"],["snk","linear-gradient(135deg,#84cc16,#059669)"],["bil","linear-gradient(135deg,#1e40af,#0f766e)"]];
 const BOT_PL={uid:"bot",name:"الكمبيوتر",emoji:"🤖"};
 const RND_WAIT=14000;
-const freshOf=k=>({ludo:freshLudo,xo:freshXO,carrom:freshCarrom,domino:freshDomino})[k]();
+const freshOf=k=>({ludo:freshLudo,xo:freshXO,carrom:freshCarrom,domino:freshDomino,snk:freshSnk,bil:freshBil})[k]();
 const tPlayers=t=>t?(t.kind==="xo"?[t.X,t.O]:Object.values(t.players||{})):[];
 const tHas=(t,u)=>tPlayers(t).some(q=>q&&q.uid===u);
 const tHumans=t=>tPlayers(t).filter(q=>q&&q.uid!=="bot").length;
@@ -4451,6 +4589,7 @@ function seatSecond(s,pl){            /* opponent takes the 2nd seat and the mat
   if(s.kind==="xo"){ s.O=pl; s.status="playing"; }
   else if(s.kind==="carrom"){ s.players.B=pl; s.status="playing"; }
   else if(s.kind==="domino"){ s.players.B=pl; domDeal(s); }
+  else if(s.kind==="snk"||s.kind==="bil"){ s.players.B=pl; s.status="playing"; }
   else if(s.kind==="ludo"){ s.players.yellow=pl; ludoStartState(s); }
   return s; }
 function joinInto(s,pl){              /* a human joins a waiting table; false when no seat is free */
@@ -4777,7 +4916,7 @@ function appBack(){
 }
 const __arm=()=>{ try{ if(!(history.state&&history.state.tsl===1)) history.pushState({tsl:1},""); }catch(_){} };
 try{ history.replaceState({tsl:0},""); }catch(_){}
-__arm(); addEventListener("pointerdown",__arm,true);
+__arm(); ["pointerdown","touchstart","click","keydown","scroll"].forEach(ev=>addEventListener(ev,__arm,{capture:true,passive:true})); addEventListener("visibilitychange",()=>{ if(!document.hidden) __arm(); });
 addEventListener("popstate",()=>{
   let h=false; try{ h=appBack(); }catch(_){}
   if(h){ __arm(); return; }
