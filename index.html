@@ -1826,7 +1826,7 @@ function renderHome(a){
   w.append(g); a.append(w);
 }
 const KIDS_SVG='<svg viewBox="0 0 120 80" width="96" height="64" xmlns="http://www.w3.org/2000/svg"><g><circle cx="38" cy="42" r="22" fill="#ffd9b0"/><path d="M16 38c0-16 12-24 24-22 12-1 22 8 22 22-8-8-18-10-24-8-8 2-16 2-22 8z" fill="#5b3a1e"/><circle cx="31" cy="44" r="2.6" fill="#222"/><circle cx="45" cy="44" r="2.6" fill="#222"/><path d="M31 52q7 6 14 0" stroke="#c2410c" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="26" cy="50" r="3.4" fill="#fca5a5" opacity=".7"/><circle cx="50" cy="50" r="3.4" fill="#fca5a5" opacity=".7"/><path d="M18 66q20 14 40 0v12h-40z" fill="#3b82f6"/></g><g><circle cx="86" cy="40" r="21" fill="#ffe0bd"/><path d="M65 38c0-18 11-24 22-24s21 8 21 24c-6-10-14-12-21-11-9 1-16 2-22 11z" fill="#7c2d12"/><circle cx="64" cy="48" r="7" fill="#7c2d12"/><circle cx="108" cy="48" r="7" fill="#7c2d12"/><circle cx="79" cy="43" r="2.5" fill="#222"/><circle cx="93" cy="43" r="2.5" fill="#222"/><path d="M80 51q6 5 12 0" stroke="#c2410c" stroke-width="2.3" fill="none" stroke-linecap="round"/><circle cx="74" cy="49" r="3.2" fill="#fca5a5" opacity=".7"/><circle cx="98" cy="49" r="3.2" fill="#fca5a5" opacity=".7"/><path d="M80 18l-7-5 3 9zM92 18l7-5-3 9z" fill="#ec4899"/><path d="M66 64q20 14 40 0v14h-40z" fill="#ec4899"/></g></svg>';
-const EARNL={roombg:"خلفيات الغرف (رفع صورة)",recv:"نقاط مستلمة من المستخدمين",agent:"إهداء مستلم",agency:"حصلت من شراء وكالة",deduct:"المخصوم من المستخدمين",adjust:"تعديل من الإدارة",support:"الدعم (الهدايا)",rooms:"الغرف (رسوم الإنشاء)",counter:"العداد",games:"رسوم الألعاب",shop:"المتجر",main:"المسحوب من المحفظة الرئيسية",sold:"المباع للمستخدمين",gift:"من الهدايا المستلمة",roomshare:"حصة غرفتك من الهدايا",roulette:"الروليت"};
+const EARNL={roombg:"خلفيات الغرف (رفع صورة)",recv:"نقاط مستلمة من المستخدمين",agent:"إهداء مستلم",agency:"إهداء من الوكالة",deduct:"المخصوم من المستخدمين",adjust:"تعديل من الإدارة",support:"الدعم (الهدايا)",rooms:"الغرف (رسوم الإنشاء)",counter:"العداد",games:"رسوم الألعاب",shop:"المتجر",main:"المسحوب من المحفظة الرئيسية",sold:"المباع للمستخدمين",gift:"من الهدايا المستلمة",roomshare:"حصة غرفتك من الهدايا",roulette:"الروليت"};
 const EARNI={roombg:"🖼️",recv:"📥",agent:"🧑‍💼",agency:"🪪",deduct:"↩️",adjust:"🛠️",support:"🎁",rooms:"🏠",counter:"⏱️",games:"🎮",shop:"🛍️",main:"⬇️",sold:"💸",gift:"🎀",roomshare:"🏘️",roulette:"🎰"};
 function wfield(icon,label,val){ const r=el("div","wfield"); r.append(el("span","wic",icon),el("span","wlb",label),el("b","wv",val)); return r; }
 function renderWalletPage(a){
@@ -1845,8 +1845,22 @@ function renderWalletPage(a){
   ["gift","roomshare","roulette","agent","recv"].forEach(k=>{ if(EARN[k]){ const w=wfield(EARNI[k],EARNL[k],fmtc(EARN[k])); w.classList.add("tap"); w.onclick=()=>sheetLedger(k); c.append(w); } });
   { const sb=el("button","btn alt full","📊 كشف الحساب (الوارد والصادر)"); sb.style.marginTop="8px"; sb.onclick=sheetSummary; c.append(sb); } a.append(c);
 }
+const CNT_MS=24*3600*1000, CNT_REWARD=10;
 function renderCounter(a){
-  const c=el("div","card"); c.style.textAlign="center"; c.append(artEl("counter",150),el("h2",null,"العداد"),el("p","mut","تفاصيل العداد والنشاط ستُضاف قريباً.")); a.append(c);
+  const c=el("div","card"); c.style.textAlign="center"; c.append(artEl("counter",150),el("h2",null,"العداد"),el("p","mut","شغّل العداد لمدة 24 ساعة، وكل تشغيل مكتمل يعطيك "+CNT_REWARD+" نقاط. تُضاف النقاط عند تشغيل العداد من جديد في اليوم التالي."));
+  const cn=prof.cnt||null;
+  const st=el("p","mut"); c.append(st);
+  const btn=el("button","btn full"); btn.style.marginTop="12px"; c.append(btn);
+  const paint=()=>{ const l=cn?cn.s+CNT_MS-Date.now():0;
+    if(cn&&l>0){ const h=Math.floor(l/3600000), m=Math.floor(l%3600000/60000); st.textContent="العداد يعمل، باقي "+h+" ساعة و"+m+" دقيقة."; btn.textContent="⏳ العداد قيد التشغيل"; btn.disabled=true; }
+    else if(cn){ st.textContent="انتهى التشغيل. اضغط لتستلم "+CNT_REWARD+" نقاط وتبدأ تشغيلاً جديداً."; btn.textContent="▶️ استلام "+CNT_REWARD+" نقاط وبدء التشغيل"; btn.disabled=false; }
+    else { st.textContent="لم تشغّل العداد بعد."; btn.textContent="▶️ ابدأ العداد (24 ساعة)"; btn.disabled=false; } };
+  paint();
+  btn.onclick=async()=>{ btn.disabled=true; try{
+      if(cn&&cn.s+CNT_MS<=Date.now()){ await setCoins(coins+CNT_REWARD); logTx("counter",CNT_REWARD); toast("🎉 حصلت على "+CNT_REWARD+" نقاط من العداد"); }
+      await saveProf({cnt:{s:Date.now()}}); toast("بدأ العداد لمدة 24 ساعة ⏱️"); render();
+    }catch(e){ toast("تعذر تشغيل العداد"); btn.disabled=false; } };
+  a.append(c);
 }
 function renderGames_old(a){
   if(!unsubTables) unsubTables=db.collection("tables").orderBy("created","desc").limit(30).onSnapshot(sn=>{ TBL=sn.docs.map(d=>({id:d.id,...d.data()})); if(tab==="games"&&!room&&!dm) drawTables(); });
