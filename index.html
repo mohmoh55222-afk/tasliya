@@ -1353,6 +1353,21 @@ body.kb .room-screen *,body.kb .room-screen *::before,body.kb .room-screen *::af
 .pstats .pst{aspect-ratio:1/1;border-radius:50%!important;border:2.5px solid #f5c542;box-shadow:0 0 12px #f5c54266,inset 0 0 0 1px #ffffff26;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;min-width:0;background:radial-gradient(circle at 35% 25%,#ffffff2a,#00000033)}.pstats .pst b{font-size:15px;line-height:1.1}.pstats .pst small{font-size:11px;opacity:.9}
 
 .bggrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}.bgthumb{width:100%;aspect-ratio:9/16;border-radius:14px;background-size:cover;background-position:center;border:2px solid #f5c542;margin-bottom:6px}.bgcell .btn{width:100%;font-size:13px;padding:8px 4px}
+
+.prow{display:flex;justify-content:center;align-items:center;gap:14px;margin:12px auto}
+.prow .pid,.prow .pbio{width:112px!important;height:112px!important;border-radius:50%!important;margin:0!important;box-sizing:border-box!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px!important;overflow:hidden;border:2.5px solid #f5c542!important;box-shadow:0 0 14px #f5c54266,inset 0 0 0 1px #ffffff26!important;background:radial-gradient(circle at 35% 25%,#ffffff2a,#00000033)!important;color:#fff}
+.prow .pid{font-size:12px;line-height:1.35;direction:ltr;white-space:normal}
+.prow .pbio{font-size:11px;line-height:1.4;opacity:1;margin:0!important;word-break:break-word}
+.pstats{justify-content:center;gap:12px;flex-wrap:wrap}
+.pstats .pst{flex:0 0 96px!important;width:96px!important;height:96px!important;aspect-ratio:auto!important;border-radius:50%!important;border:2.5px solid #f5c542!important;box-shadow:0 0 14px #f5c54266,inset 0 0 0 1px #ffffff26!important;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px!important;min-width:0;background:radial-gradient(circle at 35% 25%,#ffffff2a,#00000033)!important}
+.pstats .pst b{font-size:12px!important;line-height:1.2}
+.pstats .pst small{font-size:11px}
+
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 8px;justify-items:center;margin-top:12px}
+.scirc{background:none;border:none;color:inherit;display:flex;flex-direction:column;align-items:center;gap:7px;width:100%;cursor:pointer;font-family:inherit;padding:0}
+.sci{width:76px;height:76px;border-radius:50%;border:2.5px solid #f5c542;box-shadow:0 0 12px #f5c54266,inset 0 0 0 1px #ffffff26;display:flex;align-items:center;justify-content:center;font-size:30px;background:radial-gradient(circle at 35% 25%,#ffffff2a,#00000033)}
+.sct{font-size:12px;font-weight:700;text-align:center;line-height:1.3;max-width:100%}
+.scirc.out .sci{border-color:#ef4444}
 </style>
 </head>
 <body>
@@ -2181,12 +2196,12 @@ function sheetAgentPanel(){
     let target=null; const found=el("div");
     const sbx=searchBar("ID المستخدم…",async v=>{ target=null; await userLookup(v,found,(id,p0)=>{ target={id:id,p:p0}; return []; }); },()=>{ found.innerHTML=""; target=null; });
     c.append(sbx.w,found);
-    const w=el("div","owrow"); w.append(el("b",null,"➕ شحن نقاط للمستخدم")); const am=el("input"); am.placeholder="عدد النقاط"; am.inputMode="numeric";
-    const b=el("button","btn full","شحن — تُخصم من رصيدك"); 
+    const w=el("div","owrow"); w.append(el("b",null,"🎁 إهداء نقاط للمستخدم")); const am=el("input"); am.placeholder="عدد النقاط"; am.inputMode="numeric";
+    const b=el("button","btn full","إهداء — تُخصم من رصيدك"); 
     b.onclick=async()=>{ if(!target) return toast("ابحث عن المستخدم برقم الـ ID أولاً"); const n=normNum(am.value); if(!(n>0)) return toast("أدخل عدداً صحيحاً أكبر من صفر");
       if(n>coins) return toast("رصيدك "+fmtc(coins)+" فقط");
-      if(!confirm("شحن "+fmtc(n)+" نقطة إلى "+target.p.name+" من رصيدك؟")) return;
-      b.disabled=true; try{ if(await agentSend(target,n)){ toast("تم شحن "+fmtc(n)+" نقطة إلى "+target.p.name+" ✓"); am.value=""; } }catch(e){ toast("تعذر التنفيذ، لم يُخصم شيء"); } b.disabled=false; setBal(); };
+      if(!confirm("إهداء "+fmtc(n)+" نقطة إلى "+target.p.name+" من رصيدك؟")) return;
+      b.disabled=true; try{ if(await agentSend(target,n)){ toast("تم إهداء "+fmtc(n)+" نقطة إلى "+target.p.name+" ✓"); am.value=""; } }catch(e){ toast("تعذر التنفيذ، لم يُخصم شيء"); } b.disabled=false; setBal(); };
     w.append(am,b); c.append(w);
     c.append(el("p","mut","النقاط تُخصم من رصيدك مباشرة وتصل المستخدم فوراً. استلام المبلغ منه يتم خارج التطبيق."));
   }); }
@@ -2243,14 +2258,15 @@ function renderProfile(a){
   [["🪙",fmtc(coins),"عملاتي"],["🏠",rooms.filter(r=>r.owner===uid).length,"غرفي"],["🎁",Object.keys(prof.exp||{}).filter(k=>(prof.exp[k]||0)>Date.now()).length,"مقتنياتي"]].forEach(([i,n,t])=>{const d=el("div","pst"); d.append(el("b",null,i+" "+fmt(n)),el("small",null,t)); if(t==="مقتنياتي"){ d.style.cursor="pointer"; d.onclick=myItemsSheet; } st.append(d)});
   const wins=new Set(prof.topWeeks||[]).size; hd.append(ring,nm);
   if(wins>0){ const tb=el("div","topm"), tt=el("div"); tt.append(el("b",null,"فائز بـ Top 1"),el("small",null,"حصلت عليها "+wins+(wins===1?" مرة":" مرات"))); tb.append(medalSvg("gold",50,String(wins)),tt); hd.append(tb); }
-  hd.append(idc,bio,st); a.append(hd);
+  const prow=el("div","prow"); prow.append(idc,bio); hd.append(prow,st); a.append(hd);
   a.append(el("div","sh2","⚙️ الإعدادات"));
   const go=t=>()=>{tab=t;render()};
-  [...(OWNER?[["👑","#facc15","لوحة المالك",sheetOwner]]:[]),...((window.IS_ADMIN&&!OWNER)?[["🛡️","#22d3ee","لوحة الأدمن",sheetAdmin]]:[]),["🎨","#a78bfa","اختيار من الصور الجاهزة",()=>presetSheet(256,256,async u=>{ await saveProf({photo:u}); render(); })],["🖼️","#34d399","تغيير الصورة من الاستوديو",()=>file.click()],["✏️","#f59e0b","تغيير الاسم (مجاناً كل 20 يوماً، وإلا 20,000 نقطة)",sheetName],["📝","#38bdf8","تعديل النبذة التعريفية",sheetBio],["🎨","#c084fc","تغيير خلفية البروفايل",sheetTheme],
-   ["✨","#f472b6","متجر الإطارات والتوثيق",go("shop")],["🚪","#34d399","مؤثرات الدخول",go("shop")],["👛","#facc15","المحفظة وشحن العملات",sheetWallet],
-   ["🔊","#38bdf8",soundOn?"صوت النقر: تشغيل":"صوت النقر: إيقاف",()=>{ soundOn=!soundOn; try{localStorage.setItem("wsm_snd",soundOn?"1":"0")}catch(e){} render(); if(soundOn) sndClick(); }],...(OWNER?[["🛠️","#8b5cf6","ضبط التطبيق",ownerPanel]]:[]),["🗑️","#ef4444","حذف الحساب",deleteAccountSheet],["📜","#38bdf8","سياسة الخصوصية",()=>window.open("privacy.html","_blank")],["📲","#22c55e","تثبيت التطبيق على الشاشة",()=>window.__install?window.__install():alert("افتح التطبيق من Chrome ثم اضغط ⋮ واختر تثبيت التطبيق")],["🔒","#ef4444","تسجيل الخروج",logout]].forEach(([i,c,t,fn])=>{
-    const r=el("button","srow2"+(i==="🔒"?" out":"")), ic=el("span","sic",i); ic.style.background=c+"33";
-    r.append(ic,el("span","stx",t),el("span","chev","‹")); r.onclick=fn; a.append(r)});
+  const grid=el("div","sgrid"); a.append(grid);
+  [...((window.IS_ADMIN&&!OWNER)?[["🛡️","#22d3ee","لوحة الأدمن",sheetAdmin]]:[]),["🎨","#a78bfa","صور جاهزة",()=>presetSheet(256,256,async u=>{ await saveProf({photo:u}); render(); })],["🖼️","#34d399","تغيير الصورة",()=>file.click()],["✏️","#f59e0b","تغيير الاسم",sheetName],["📝","#38bdf8","النبذة",sheetBio],["🎨","#c084fc","خلفية البروفايل",sheetTheme],
+   ["✨","#f472b6","المتجر",go("shop")],["🚪","#34d399","مؤثرات الدخول",go("shop")],["👛","#facc15","المحفظة",sheetWallet],
+   ["🔊","#38bdf8",soundOn?"الصوت: تشغيل":"الصوت: إيقاف",()=>{ soundOn=!soundOn; try{localStorage.setItem("wsm_snd",soundOn?"1":"0")}catch(e){} render(); if(soundOn) sndClick(); }],...(OWNER?[["🛠️","#8b5cf6","ضبط التطبيق",ownerPanel]]:[]),["🗑️","#ef4444","حذف الحساب",deleteAccountSheet],["📜","#38bdf8","سياسة الخصوصية",()=>window.open("privacy.html","_blank")],["📲","#22c55e","تثبيت التطبيق على الشاشة",()=>window.__install?window.__install():alert("افتح التطبيق من Chrome ثم اضغط ⋮ واختر تثبيت التطبيق")],["🔒","#ef4444","تسجيل الخروج",logout]].forEach(([i,c,t,fn])=>{
+    const r=el("button","scirc"+(i==="🔒"?" out":"")), ic=el("span","sci",i); ic.style.background=c+"33";
+    r.append(ic,el("span","sct",t)); r.onclick=fn; grid.append(r)});
 }
 const ITEMS=[["🖼️","إطار ذهبي",200],["🏅","شارة VIP",150],["✨","دخول مميز",300],["👑","لقب الملك",500]];
 let dm=null,dmMsgs=[],unsubChat=null,unsubInbox=null,inbox=[];
@@ -2316,7 +2332,11 @@ function sheetAppTheme(){ sheet("🎨 لون واجهة التطبيق",(c,close
   c.append(el("b",null,"لون مخصص")); const pk=el("input"); pk.type="color"; pk.value=cur; pk.style.cssText="width:100%;height:46px;margin:8px 0;padding:2px;border-radius:12px"; c.append(pk);
   const sv=el("button","btn full","💾 حفظ اللون المخصص"); sv.onclick=()=>save(pk.value); c.append(sv);
   const rs=el("button","btn alt full","↩️ إعادة الألوان الافتراضية"); rs.style.marginTop="8px"; rs.onclick=async()=>{ try{ await db.doc("app/theme").delete(); applyTheme(null); try{ localStorage.removeItem("thmC"); }catch(_){} toast("عادت الألوان الافتراضية للجميع ✓"); }catch(e){ toast("تعذر التنفيذ"); } }; c.append(rs); }); }
-function ownerPanel(){ sheet("🛠️ ضبط التطبيق",(c,close)=>{ const b1=el("button","btn full","👤 ضبط المستخدمين"), b2=el("button","btn full alt","🏠 ضبط الغرف"), b5=el("button","btn full alt","🚩 البلاغات"), b6=el("button","btn full alt","🛡️ الأدمن"), b4=el("button","btn full alt","🎨 لون واجهة التطبيق (للجميع)"); b2.style.marginTop="8px"; b3.style.marginTop="8px"; b4.style.marginTop="8px"; b4.onclick=()=>{ close(); sheetAppTheme(); }; b1.onclick=()=>{ close(); usersMgr(); }; b2.onclick=()=>{ close(); roomsMgr(); }; b3.onclick=()=>{ close(); agentsMgr(); }; b5.style.marginTop="8px"; b5.onclick=()=>{ close(); reportsList(); }; b6.style.marginTop="8px"; b6.onclick=()=>{ close(); staffMgr(); }; c.append(b1,b2,b5,b6,b4); }); }
+function sCirc(emoji,label,fn){ const r=el("button","scirc"), ic=el("span","sci",emoji), t=el("span","sct",label); r.append(ic,t); r.onclick=fn; return r; }
+function ownerPanel(){ sheet("🛠️ ضبط التطبيق",(c,close)=>{ const g=el("div","sgrid");
+  [["👑","لوحة المالك",()=>{ close(); sheetOwner(); }],["👤","ضبط المستخدمين",()=>{ close(); usersMgr(); }],["🏠","ضبط الغرف",()=>{ close(); roomsMgr(); }],["🚩","البلاغات",()=>{ close(); reportsList(); }],["🛡️","الأدمن",()=>{ close(); staffMgr(); }],["🎨","لون الواجهة",()=>{ close(); sheetAppTheme(); }]]
+    .forEach(([i,t,f])=>g.append(sCirc(i,t,f)));
+  c.append(g); }); }
 function usersMgr(){ sheet("👤 المستخدمون",(c,close)=>{ const q=el("input"); q.placeholder="بحث بالاسم أو الـ ID"; const L=el("div"); L.style.cssText="max-height:55vh;overflow:auto;margin-top:8px";
   const draw=()=>{ L.innerHTML=""; const t=q.value.trim().toLowerCase(); Object.entries(PROFS).filter(([u,p])=>!t||String(p.name||"").toLowerCase().includes(t)||String(p.pid||"")===t).slice(0,80).forEach(([u,p])=>{ const r=el("div","room"), av=el("div","av"); av.style.cssText="width:40px;height:40px;font-size:20px"; setAv(av,p.emoji||"🙂",p.photo); const i=el("div"); i.style.flex="1"; i.append(el("b",null,p.name||"مستخدم"),el("div","mut","ID #"+(p.pid||""))); r.append(frameWrap(av,AF(p),2),i); r.style.cursor="pointer"; r.onclick=()=>{ close(); userAdmin(u); }; L.append(r); }); };
   q.oninput=draw; c.append(q,L); draw(); }); }
@@ -3046,7 +3066,7 @@ function renderRoom(a){
   const fl=el("div","fl"), chb=el("button","fb"); chb.innerHTML=icH("chat"); chb.onclick=()=>dmOverlay(); chb.append(nbd("dm"));
   const disc=el("button","fb disc"+((MUS.on&&!musMuted)?" spin":"")); disc.id="discb"; { const ds=el("span","dsc"); ds.innerHTML=icH("disc"); disc.append(ds); } disc.onclick=sheetMusic;
   const mic2=el("button","fb"); mic2.innerHTML=icH((mySeat()&&micMuted)?"micoff":"mic"); mic2.id="micb"; mic2.onclick=toggleMic;
-  const mm=el("button","fb chg"); mm.id="chgb"; mm.innerHTML=icH("bolt"); mm.title="شحن النقاط"; mm.onclick=sheetCharge;
+  const mm=el("button","fb chg"); mm.id="chgb"; mm.innerHTML=icH("bolt"); mm.title="إهداء النقاط"; mm.onclick=sheetCharge;
   const gb=el("button","gbtn"); { const gi2=el("div","gico"); gi2.innerHTML=icH("gift"); gb.append(gi2,el("small",null,"0")); } gb.querySelector("small").id="gtot"; gb.onclick=openGifts;
   fl.append(chb,disc,mic2,mm,gb);
   const bar=el("div","rs-bar");
