@@ -1370,6 +1370,37 @@ body.kb .room-screen *,body.kb .room-screen *::before,body.kb .room-screen *::af
 .scirc.out .sci{border-color:#ef4444}
 
 .dmrw{display:flex;align-items:center;gap:6px}.dmrw>:first-child{flex:1;min-width:0}
+
+.lcdbox{background:#050816;border:4px solid #d4af37;border-radius:20px;padding:18px 8px;margin:14px auto 6px;max-width:440px;box-shadow:inset 0 0 22px #000,0 6px 18px #0006}
+.lcd{font-family:Orbitron,"Courier New",monospace;font-weight:900;font-size:clamp(34px,11vw,60px);color:#39ff14;text-shadow:0 0 6px #39ff14,0 0 18px #22c55e;letter-spacing:3px;direction:ltr;font-variant-numeric:tabular-nums;line-height:1.1}
+.lcd.off{color:#1f3b2a;text-shadow:none}
+#counter-art{width:200px;height:200px}
+
+/* ---- light theme: white interior, bright colored icons, gold frame ---- */
+:root{--bg:#ffffff;--card:#ffffff;--tx:#1e1b4b;--mut:#64748b;--pri:#7c3aed;--gold:#b7791f;--line:#e5e7eb}
+body{background:#ffffff!important;color:var(--tx)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:99999;border:7px solid transparent;border-image:linear-gradient(135deg,#fde68a,#d4af37,#b8860b,#fef3c7,#d4af37) 1}
+.card{background:#fff;box-shadow:0 4px 14px #0f172a14;border:1px solid #e5e7eb}
+.coins{background:#fff7e0;color:#92400e;border-color:#f5c542}
+.msg{background:#f1f5ff;color:var(--tx)}
+.msg.gift{background:linear-gradient(90deg,#fde68a,#fbcfe8)}
+.mut{color:#64748b}
+.nav{background:#fff;border-top:1px solid #e5e7eb;box-shadow:0 -4px 14px #0f172a0d}
+.nav button{color:#64748b}
+.nav button:nth-child(1){color:#2563eb}.nav button:nth-child(2){color:#db2777}.nav button:nth-child(3){color:#16a34a}
+.nav button:nth-child(4){color:#ea580c}.nav button:nth-child(5){color:#7c3aed}
+.nav button.on{color:#7c3aed}
+input,textarea{background:#fff;color:var(--tx);border-color:#d1d5db}
+.gifts button{background:#fff;color:var(--tx);border-color:#e5e7eb}
+.av{background:linear-gradient(135deg,#a78bfa,#f472b6)}
+.tile{background:#fff!important;box-shadow:0 3px 10px #0f172a1a}
+.tile:nth-child(4n+1) .ti{color:#2563eb}.tile:nth-child(4n+2) .ti{color:#db2777}.tile:nth-child(4n+3) .ti{color:#16a34a}.tile:nth-child(4n) .ti{color:#ea580c}
+.sci{background:linear-gradient(135deg,#fef3c7,#fbcfe8)!important;box-shadow:0 3px 10px #0f172a22}
+.scirc:nth-child(4n+1) .sci{background:linear-gradient(135deg,#dbeafe,#bfdbfe)!important}
+.scirc:nth-child(4n+2) .sci{background:linear-gradient(135deg,#fce7f3,#fbcfe8)!important}
+.scirc:nth-child(4n+3) .sci{background:linear-gradient(135deg,#dcfce7,#bbf7d0)!important}
+.scirc:nth-child(4n) .sci{background:linear-gradient(135deg,#ffedd5,#fed7aa)!important}
+
 </style>
 </head>
 <body>
@@ -1846,17 +1877,21 @@ function renderWalletPage(a){
   { const sb=el("button","btn alt full","📊 كشف الحساب (الوارد والصادر)"); sb.style.marginTop="8px"; sb.onclick=sheetSummary; c.append(sb); } a.append(c);
 }
 const CNT_MS=24*3600*1000, CNT_REWARD=10;
+function cntFmt(ms){ const s=Math.floor(Math.max(0,ms)/1000), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return [h,m,x].map(v=>String(v).padStart(2,"0")).join(":"); }
 function renderCounter(a){
-  const c=el("div","card"); c.style.textAlign="center"; c.append(artEl("counter",150),el("h2",null,"العداد"),el("p","mut","شغّل العداد لمدة 24 ساعة، وكل تشغيل مكتمل يعطيك "+CNT_REWARD+" نقاط. تُضاف النقاط عند تشغيل العداد من جديد في اليوم التالي."));
-  const cn=prof.cnt||null;
+  const c=el("div","card"); c.style.textAlign="center";
+  c.append(artEl("counter",200),el("h2",null,"العداد"),el("p","mut","شغّل العداد لمدة 24 ساعة، وكل تشغيل مكتمل يعطيك "+CNT_REWARD+" نقاط."));
+  const box=el("div","lcdbox"), d=el("div","lcd"); box.append(d); c.append(box);
   const st=el("p","mut"); c.append(st);
   const btn=el("button","btn full"); btn.style.marginTop="12px"; c.append(btn);
-  const paint=()=>{ const l=cn?cn.s+CNT_MS-Date.now():0;
-    if(cn&&l>0){ const h=Math.floor(l/3600000), m=Math.floor(l%3600000/60000); st.textContent="العداد يعمل، باقي "+h+" ساعة و"+m+" دقيقة."; btn.textContent="⏳ العداد قيد التشغيل"; btn.disabled=true; }
-    else if(cn){ st.textContent="انتهى التشغيل. اضغط لتستلم "+CNT_REWARD+" نقاط وتبدأ تشغيلاً جديداً."; btn.textContent="▶️ استلام "+CNT_REWARD+" نقاط وبدء التشغيل"; btn.disabled=false; }
-    else { st.textContent="لم تشغّل العداد بعد."; btn.textContent="▶️ ابدأ العداد (24 ساعة)"; btn.disabled=false; } };
+  const paint=()=>{ const cn=prof.cnt||null, l=cn?cn.s+CNT_MS-Date.now():0;
+    if(cn&&l>0){ d.textContent=cntFmt(l); d.classList.remove("off"); st.textContent="العداد يعمل، الوقت المتبقي أعلاه."; btn.textContent="⏳ العداد قيد التشغيل"; btn.disabled=true; }
+    else if(cn){ d.textContent="00:00:00"; d.classList.remove("off"); st.textContent="انتهى التشغيل. اضغط لتستلم "+CNT_REWARD+" نقاط وتبدأ تشغيلاً جديداً."; btn.textContent="▶️ استلام "+CNT_REWARD+" نقاط وبدء التشغيل"; btn.disabled=false; }
+    else { d.textContent="24:00:00"; d.classList.add("off"); st.textContent="لم تشغّل العداد بعد."; btn.textContent="▶️ ابدأ العداد (24 ساعة)"; btn.disabled=false; } };
   paint();
+  const tm=setInterval(()=>{ if(!c.isConnected){ clearInterval(tm); return; } paint(); },1000);
   btn.onclick=async()=>{ btn.disabled=true; try{
+      const cn=prof.cnt||null;
       if(cn&&cn.s+CNT_MS<=Date.now()){ await setCoins(coins+CNT_REWARD); logTx("counter",CNT_REWARD); toast("🎉 حصلت على "+CNT_REWARD+" نقاط من العداد"); }
       await saveProf({cnt:{s:Date.now()}}); toast("بدأ العداد لمدة 24 ساعة ⏱️"); render();
     }catch(e){ toast("تعذر تشغيل العداد"); btn.disabled=false; } };
@@ -2635,7 +2670,7 @@ function mySeat(){ const N=room?micN(room):99; return Object.keys(seats).find(k=
 
 /* ---------- VOICE: WebRTC mesh between seated players (STUN only) ----------
    signalling in Firestore: rooms/{id}/rtc/{lo_hi} (offer/answer) and rooms/{id}/rtcc (ICE candidates) */
-const RTC_CFG={iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}]};
+const RTC_CFG={iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"},{urls:"turn:openrelay.metered.ca:80",username:"openrelayproject",credential:"openrelayproject"},{urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},{urls:"turns:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"}]};
 let RT={rid:null,un:[],pcs:{},acc:{},docs:{},cand:{},audio:{},an:{},mic:null,micP:null,micDenied:false,t0:0,lvl:null,ac:null};
 const rtKey=o=>[uid,o].sort().join("_");
 const rtSid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
@@ -2955,7 +2990,7 @@ function startNotif(){ if(unsubNot||!db||!uid) return;
     notBadge(); });
   unsubDmN=db.collection("inbox/"+uid+"/threads").orderBy("t","desc").limit(30).onSnapshot(sn=>{ sn.docChanges().forEach(c=>{ if(c.type==="removed") return; const th=c.doc.data();
     if(!th.from||th.from===uid||th.t<notSince) return; if(dm&&dm.uid===th.uid) return; if(dmOv&&dmOv.uid===th.uid) return;
-    if(dmUnread[th.uid]===th.t) return; dmUnread[th.uid]=th.t; toast("💬 "+(th.name||"رسالة")+": "+String(th.last||"").slice(0,40)); notBadge(); }); }); }
+    if(dmUnread[th.uid]===th.t) return; dmUnread[th.uid]=th.t; if(!room) toast("💬 "+(th.name||"رسالة")+": "+String(th.last||"").slice(0,40)); notBadge(); }); }); }
 async function addFriend(f){ if(!f||f.uid===uid) return; if(isFriend(f.uid)) return toast("هو صديقك بالفعل ✓");
   const pend=pendingFrom(f.uid); if(pend) return acceptFriend(pend);
   if(sentReq.has(f.uid)) return toast("أرسلت له طلباً من قبل — بانتظار موافقته");
@@ -3192,7 +3227,7 @@ function drawChatNow(){
   while(c.children.length>i) c.lastChild.remove();
   if(i<want.length){ const fr=document.createDocumentFragment(); for(let j=i;j<want.length;j++) fr.append(want[j]); c.append(fr); }
   if(near){ if(had&&c.scrollTo&&i<want.length) c.scrollTo({top:c.scrollHeight,behavior:"smooth"}); else c.scrollTop=c.scrollHeight; }
-  const gt2=document.getElementById("gtot"); if(gt2) gt2.textContent=fmt(topRows.reduce((s2,m2)=>s2+(m2.tot||0),0));
+  const gt2=document.getElementById("gtot"); if(gt2){ const mine=topRows.find(r=>r.uid===uid); gt2.textContent=fmt(mine?(mine.tot||0):(twMine[wkKey()]||0)); }
 }
 let topRows=[], topList=[], topRank={}, unsubTop=null, joinT=0, BOARD=null, twWk=null, unsubTW=null, twMine={}, bumpQ=Promise.resolve();
 const wkKey=()=>String(satMid().getTime());
@@ -4234,7 +4269,7 @@ function l3BoardCanvas(S){
   return LBCV=cv;
 }
 function l3DiceMats(T,color){ return [3,4,1,6,2,5].map(n=>{ const cv=document.createElement("canvas"); cv.width=cv.height=256; const g=cv.getContext("2d"); const gr=g.createLinearGradient(0,0,256,256); gr.addColorStop(0,"#ffffff"); gr.addColorStop(1,"#cfd5df");
-    g.fillStyle=gr; g.fillRect(0,0,256,256); g.strokeStyle="rgba(0,0,0,.22)"; g.lineWidth=12; g.strokeRect(6,6,244,244); g.fillStyle=color; g.font="900 170px Arial,sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText(String(n),128,138);
+    g.fillStyle=gr; g.fillRect(0,0,256,256); g.strokeStyle="rgba(0,0,0,.22)"; g.lineWidth=12; g.strokeRect(6,6,244,244); g.fillStyle=n===1?color:"#111"; PIPS[n].forEach(i=>{ g.beginPath(); g.arc(72+(i%3)*56,72+Math.floor(i/3)*56,22,0,6.283); g.fill(); });
     return new T.MeshStandardMaterial({map:new T.CanvasTexture(cv),roughness:.35,metalness:.05}); }); }
 function l3Init(st,sig){
   const T=window.THREE, size=Math.min(innerWidth*.92,440), dpr=Math.min(window.devicePixelRatio||1,2);
@@ -4326,6 +4361,8 @@ function throwDie(wrap,cube,sh,to){
 function ptag0(pl,sz){ const pp=PROFS[pl.uid]||{}, w=el("span","ptag"), a=el("span","pav2"); a.style.width=sz+"px"; a.style.height=sz+"px"; a.style.fontSize=Math.round(sz*.55)+"px"; setAv(a,pl.emoji||pp.emoji||"👤",pp.photo);
   const nm=el("span","ptn",pl.name); if(AV(pp)&&VCOL[AV(pp)]) nm.append(" ",vbadge(AV(pp),Math.round(sz*.5))); w.append(frameWrap(a,AF(pp),2),nm); return w; }
 
+const SNK_DIE={seq:-1};
+function mkCube(v){ const wrap=el("div","dwrap"), cube=el("div","cube"); [1,2,3,4,5,6].forEach(n=>{ const f=el("div","cf cf"+n); setPips(f,n); cube.append(f); }); wrap.append(cube); poseCube(cube,v||1,false); return {wrap:wrap,cube:cube}; }
 /* ===================== Snakes & ladders (snk) ===================== */
 const SNK_L={1:38,4:14,9:31,21:42,28:84,36:44,51:67,71:91,80:100}, SNK_S={16:6,47:26,49:11,56:53,62:19,64:60,87:24,93:73,95:75,98:78};
 const freshSnk=()=>({kind:"snk",status:"waiting",host:uid,hostName:prof.name,players:{A:meP()},pos:{A:0,B:0},turn:"A",dice:0,winner:"",seq:0,created:Date.now()});
@@ -4349,7 +4386,7 @@ function drawSnk(b){
   ["A","B"].forEach(k=>{ const pl=st.players[k]; if(!pl) return; const d=el("div","lpl"+(st.turn===k&&st.status==="playing"?" on":"")); d.append(ptag(pl,26),el("small",null,"المربع "+(st.pos[k]||0))); bar.append(d); });
   b.append(bar);
   b.append(snkMake(st));
-  { const dv=el("div","snk-dice",st.dice?String(st.dice):"🎲"); if(SNKA.anim) dv.classList.add("spin"); b.append(dv); }
+  { const dw=el("div","snkdw"), tc=mkCube(st.dice||1); dw.append(tc.wrap); b.append(dw); if(SNKA.anim&&st.dice&&SNK_DIE.seq!==st.seq){ SNK_DIE.seq=st.seq; setTimeout(()=>throwDie(tc.wrap,tc.cube,null,st.dice),0); } }
   if(st.status==="playing"){ const pl=st.players[st.turn]||{}, mine=pl.uid===uid;
     b.append(el("p",null, mine?"دورك — اضغط لرمي النرد":"دور "+(pl.name||"")+" …"));
     if(mine){ const bt=el("button","btn full","🎲 ارمِ النرد"); bt.onclick=snkThrow; b.append(bt); } }
@@ -4383,7 +4420,7 @@ function snkMake(st){
   const cv=document.createElement("canvas"); cv.width=640; cv.height=640; cv.className="snkc"; SNKA.cv=cv; SNKA.st=st;
   let P=null; if(SNKA.anim){ P=Object.assign({},st.pos); P[SNKA.anim.who]=(SNKA.pos||{})[SNKA.anim.who]||0; }
   snkPaint(cv,st,P); return cv; }
-function snkLoop(now){ const A=SNKA.anim; if(!A) return; if(!A.t0) A.t0=now; const k=Math.floor((now-A.t0)/200);
+function snkLoop(now){ const A=SNKA.anim; if(!A) return; if(!A.t0) A.t0=now; const k=Math.floor((now-A.t0)/420);
   if(k>=A.cells.length){ SNKA.anim=null; if(SNKA.cv&&SNKA.st) snkPaint(SNKA.cv,SNKA.st,null); return; }
   const P=Object.assign({},SNKA.st.pos); P[A.who]=A.cells[k]; if(SNKA.cv) snkPaint(SNKA.cv,SNKA.st,P); SNKA.raf=requestAnimationFrame(snkLoop); }
 function snkCanvas(st,P0){ const cv=document.createElement("canvas"); cv.width=640; cv.height=640; cv.className="snkc"; snkPaint(cv,st,P0); return cv; }
@@ -4411,19 +4448,20 @@ function bilInitB(){ const b=[]; for(let i=0;i<16;i++) b.push({i:i,x:0,y:0,on:fa
   BIL_RACK.forEach((row,k)=>row.forEach((id,j)=>{ b[id]={i:id,x:1.5+k*.0522,y:.5+(j-k/2)*.06,on:true}; })); return b; }
 const freshBil=()=>({kind:"bil",status:"waiting",host:uid,hostName:prof.name,players:{A:meP()},b:bilInitB(),grp:{A:"",B:""},turn:"A",winner:"",seq:0,created:Date.now()});
 function bilSim(balls,ang,pow){
-  const B=balls.map(q=>({i:q.i,x:q.x,y:q.y,vx:0,vy:0,on:q.on})), c=B[0], sp=.6+pow*3.2, R=BLX_R, dt=1/240, f=Math.pow(.5,dt);
+  const B=balls.map(q=>({i:q.i,x:q.x,y:q.y,vx:0,vy:0,on:q.on,sk:0,sc:1})), c=B[0], sp=.6+pow*3.2, R=BLX_R, dt=1/240, f=Math.pow(.5,dt);
   c.vx=Math.cos(ang)*sp; c.vy=Math.sin(ang)*sp;
-  const frames=[], pocketed=[], snap=()=>B.map(q=>[q.x,q.y,q.on?1:0]);
+  const frames=[], pocketed=[], snap=()=>B.map(q=>[q.x,q.y,q.on?1:0,q.sk?q.sc:1]);
   frames.push(snap());
   for(let s=0;s<240*12;s++){
-    for(const q of B){ if(!q.on) continue; q.x+=q.vx*dt; q.y+=q.vy*dt; q.vx*=f; q.vy*=f; if(Math.hypot(q.vx,q.vy)<.004){ q.vx=0; q.vy=0; } }
-    for(const q of B){ if(!q.on) continue; for(const [px,py] of BLX_P){ if(Math.hypot(q.x-px,q.y-py)<BLX_PR){ q.on=false; q.vx=0; q.vy=0; pocketed.push(q.i); break; } } }
-    for(const q of B){ if(!q.on) continue; if(q.x<R){ q.x=R; q.vx=-q.vx*.85; } if(q.x>2-R){ q.x=2-R; q.vx=-q.vx*.85; } if(q.y<R){ q.y=R; q.vy=-q.vy*.85; } if(q.y>1-R){ q.y=1-R; q.vy=-q.vy*.85; } }
-    for(let a=0;a<16;a++){ const qa=B[a]; if(!qa.on) continue; for(let b2=a+1;b2<16;b2++){ const qb=B[b2]; if(!qb.on) continue;
+    for(const q of B){ if(!q.on||!q.sk) continue; const P=BLX_P[q.sk-1]; q.x+=(P[0]-q.x)*.12; q.y+=(P[1]-q.y)*.12; q.sc-=.018; if(q.sc<=0){ q.on=false; q.sk=0; q.sc=1; } }
+    for(const q of B){ if(!q.on||q.sk) continue; q.x+=q.vx*dt; q.y+=q.vy*dt; q.vx*=f; q.vy*=f; if(Math.hypot(q.vx,q.vy)<.004){ q.vx=0; q.vy=0; } }
+    for(const q of B){ if(!q.on||q.sk) continue; for(let h=0;h<BLX_P.length;h++){ const px=BLX_P[h][0], py=BLX_P[h][1]; if(Math.hypot(q.x-px,q.y-py)<BLX_PR){ q.sk=h+1; q.vx=0; q.vy=0; pocketed.push(q.i); break; } } }
+    for(const q of B){ if(!q.on||q.sk) continue; if(q.x<R){ q.x=R; q.vx=-q.vx*.85; } if(q.x>2-R){ q.x=2-R; q.vx=-q.vx*.85; } if(q.y<R){ q.y=R; q.vy=-q.vy*.85; } if(q.y>1-R){ q.y=1-R; q.vy=-q.vy*.85; } }
+    for(let a=0;a<16;a++){ const qa=B[a]; if(!qa.on||qa.sk) continue; for(let b2=a+1;b2<16;b2++){ const qb=B[b2]; if(!qb.on||qb.sk) continue;
       const dx=qb.x-qa.x, dy=qb.y-qa.y, d=Math.hypot(dx,dy); if(d<=0||d>=2*R) continue;
       const nx=dx/d, ny=dy/d, ov=(2*R-d)/2; qa.x-=nx*ov; qa.y-=ny*ov; qb.x+=nx*ov; qb.y+=ny*ov;
       const av=(qa.vx-qb.vx)*nx+(qa.vy-qb.vy)*ny; if(av>0){ const k=(1+.97)/2*av; qa.vx-=k*nx; qa.vy-=k*ny; qb.vx+=k*nx; qb.vy+=k*ny; } } }
-    let mv=false; for(const q of B){ if(q.on&&(q.vx||q.vy)){ mv=true; break; } }
+    let mv=false; for(const q of B){ if(q.on&&(q.sk||q.vx||q.vy)){ mv=true; break; } }
     if(s%4===3) frames.push(snap());
     if(!mv) break; }
   frames.push(snap());
@@ -4451,12 +4489,14 @@ function bilCanShoot(){ const st=cur; return !!st&&st.kind==="bil"&&st.status===
 function bilShoot(ang,pow,isBot){
   const st=cur&&cur.kind==="bil"?cur:null; if(!st||st.status!=="playing"||BLX.anim) return;
   const sh=st.turn; if(!isBot&&(!st.players[sh]||st.players[sh].uid!==uid)) return;
-  const res=bilSim(st.b,ang,pow); BLX.anim={frames:res.frames,k:0,res:res,by:sh,st:clone(st),t0:0}; BLX.raf=requestAnimationFrame(bilPlay);
+  const res=bilSim(st.b,ang,pow); BLX.anim={frames:res.frames,k:0,res:res,by:sh,st:clone(st),t0:0,ang:ang}; BLX.raf=requestAnimationFrame(bilPlay);
 }
-function bilPlay(now){ const A=BLX.anim; if(!A) return; if(!A.t0) A.t0=now; const k=Math.floor((now-A.t0)/(1000/60));
-  if(k>=A.frames.length-1){ A.k=A.frames.length-1; bilRender(); bilFinish(); return; }
-  A.k=k; bilRender(); BLX.raf=requestAnimationFrame(bilPlay); }
-async function bilFinish(){ const A=BLX.anim; BLX.anim=null; if(!A) return; const st=A.st; st.b=A.res.balls; bilRules(st,A.by,A.res.pocketed); st.seq=(st.seq||0)+1; try{ await saveGame(st); }catch(e){} }
+function bilPlay(now){ const A=BLX.anim; if(!A) return; if(!A.t0) A.t0=now; const tf=(now-A.t0)/(1000/60), k=Math.floor(tf), n=A.frames.length;
+  if(k>=n-1){ A.k=n-1; A.cur=null; bilRender(); bilFinish(); return; }
+  const fr=tf-k, a=A.frames[k], b=A.frames[k+1];
+  A.k=k; A.cur=a.map((q,i)=>{ const w=b[i], qa=q[3]==null?1:q[3], wa=w[3]==null?1:w[3]; return [q[0]+(w[0]-q[0])*fr, q[1]+(w[1]-q[1])*fr, q[2], qa+(wa-qa)*fr]; });
+  bilRender(); BLX.raf=requestAnimationFrame(bilPlay); }
+async function bilFinish(){ const A=BLX.anim; BLX.anim=null; if(!A) return; const st=A.st; st.b=A.res.balls; st.lastAng=A.ang; bilRules(st,A.by,A.res.pocketed); st.seq=(st.seq||0)+1; try{ await saveGame(st); }catch(e){} }
 function bilPaint(src,aim){ const c=BLX.ctx; if(!c) return; const W=800,H=444,M=44,S=356, X=x=>M+x*S, Y=y=>M+y*S;
   c.clearRect(0,0,W,H);
   const wg=c.createLinearGradient(0,0,0,H); wg.addColorStop(0,"#8a4a22"); wg.addColorStop(.5,"#5a2a12"); wg.addColorStop(1,"#8a4a22");
@@ -4468,7 +4508,7 @@ function bilPaint(src,aim){ const c=BLX.ctx; if(!c) return; const W=800,H=444,M=
   c.beginPath(); c.arc(X(.5),Y(.5),.2*S,Math.PI/2,Math.PI*1.5); c.stroke();
   BLX_P.forEach(([px,py])=>{ c.beginPath(); c.arc(X(px),Y(py),BLX_PR*S+12,0,6.283); c.fillStyle="#c9a24a"; c.fill();
     c.beginPath(); c.arc(X(px),Y(py),BLX_PR*S+4,0,6.283); c.fillStyle="#0b0b0b"; c.fill(); });
-  src.forEach((q,idx)=>{ if(q[2]!==1) return; const px=X(q[0]), py=Y(q[1]), r=BLX_R*S;
+  src.forEach((q,idx)=>{ if(q[2]!==1) return; const px=X(q[0]), py=Y(q[1]), r=BLX_R*S*(q[3]==null?1:q[3]);
     const col=idx===0?"#f8f8f2":idx===8?"#111111":idx<8?"#c81e1e":"#f5c518";
     c.beginPath(); c.arc(px+3,py+4,r,0,6.283); c.fillStyle="rgba(0,0,0,.35)"; c.fill();
     const g=c.createRadialGradient(px-r*.35,py-r*.4,r*.1,px,py,r); g.addColorStop(0,"#ffffff"); g.addColorStop(.3,col); g.addColorStop(1,shadeOf(col));
@@ -4481,13 +4521,25 @@ function bilPaint(src,aim){ const c=BLX.ctx; if(!c) return; const W=800,H=444,M=
     const sg=c.createLinearGradient(sx,sy,ex,ey); sg.addColorStop(0,"#f1d7a5"); sg.addColorStop(.06,"#d9a866"); sg.addColorStop(1,"#5a3416");
     c.strokeStyle=sg; c.lineWidth=10; c.lineCap="round"; c.beginPath(); c.moveTo(sx,sy); c.lineTo(ex,ey); c.stroke(); }
 }
-function bilRender(){ if(!BLX.ctx) return; let src=null; if(BLX.anim) src=BLX.anim.frames[BLX.anim.k||0]; else if(cur&&cur.kind==="bil"&&cur.b) src=cur.b.map(q=>[q.x,q.y,q.on?1:0]); if(src) bilPaint(src,BLX.drag?BLX.aim:null); }
+function bilRender(){ if(!BLX.ctx) return; let src=null;
+  if(BLX.anim){ const A=BLX.anim; src=A.cur||A.frames[A.k||0]; }
+  else if(cur&&cur.kind==="bil"&&cur.b) src=cur.b.map(q=>[q.x,q.y,q.on?1:0]);
+  if(!src) return;
+  let aim=null;
+  if(BLX.drag) aim=BLX.aim;
+  else if(!BLX.anim&&cur&&cur.kind==="bil"){ const ca=cur.aim;
+    if(ca&&ca.by!==uid&&ca.t>Date.now()-4000) aim={ang:ca.ang,pow:ca.pow};
+    else if(cur.status==="playing"&&cur.lastAng!=null&&cur.players&&cur.players[cur.turn]) aim={ang:cur.lastAng,pow:.25}; }
+  bilPaint(src,aim); }
 function bilEnsure(){ if(BLX.cv) return; const cv=document.createElement("canvas"); cv.width=800; cv.height=444; cv.className="bilc"; BLX.cv=cv; BLX.ctx=cv.getContext("2d");
   const pt=e=>{ const r=cv.getBoundingClientRect(), cx=(e.clientX-r.left)/r.width*800, cy=(e.clientY-r.top)/r.height*444; return {x:(cx-44)/356, y:(cy-44)/356}; };
   cv.addEventListener("pointerdown",e=>{ if(!bilCanShoot()) return; BLX.drag=pt(e); try{ cv.setPointerCapture(e.pointerId); }catch(_){} });
-  cv.addEventListener("pointermove",e=>{ if(!BLX.drag) return; const p=pt(e), dx=BLX.drag.x-p.x, dy=BLX.drag.y-p.y, d=Math.hypot(dx,dy); BLX.aim={ang:Math.atan2(dy,dx),pow:Math.min(1,d/.35)}; bilRender(); });
-  const end=()=>{ const a=BLX.aim; BLX.drag=null; BLX.aim=null; bilRender(); if(a&&a.pow>.06) bilShoot(a.ang,a.pow,false); };
-  cv.addEventListener("pointerup",end); cv.addEventListener("pointercancel",()=>{ BLX.drag=null; BLX.aim=null; bilRender(); }); }
+  cv.addEventListener("pointermove",e=>{ if(!BLX.drag) return; const p=pt(e), dx=BLX.drag.x-p.x, dy=BLX.drag.y-p.y, d=Math.hypot(dx,dy); BLX.aim={ang:Math.atan2(dy,dx),pow:Math.min(1,d/.35)}; bilAimSend(); bilRender(); });
+  const end=()=>{ const a=BLX.aim; BLX.drag=null; BLX.aim=null; bilAimSend(true); bilRender(); if(a&&a.pow>.06) bilShoot(a.ang,a.pow,false); };
+  cv.addEventListener("pointerup",end); cv.addEventListener("pointercancel",()=>{ BLX.drag=null; BLX.aim=null; bilAimSend(true); bilRender(); }); }
+let BAIM_T=0;
+function bilAimSend(clear){ const now=Date.now(); if(!clear&&now-BAIM_T<140) return; BAIM_T=now; if(!gtid) return;
+  try{ db.doc(gpath()).update({aim:clear||!BLX.aim?null:{by:uid,ang:BLX.aim.ang,pow:BLX.aim.pow,t:now}}).catch(()=>{}); }catch(e){} }
 function bilReset(){ cancelAnimationFrame(BLX.raf); BLX.cv=null; BLX.ctx=null; BLX.drag=null; BLX.aim=null; BLX.anim=null; }
 function drawBil(b){
   const st=cur&&cur.kind==="bil"?cur:null;
@@ -4573,7 +4625,7 @@ function drawLudo(b){
   const slot=c=>{ const pl=st.players[c], d=el("div","dslot"); if(!pl){ d.className="dslot empty"; return d; }
     const isT=st.status==="playing"&&st.turn===c; d.className="dslot"+(isT?" on":""); d.style.setProperty("--dc",LC[c]);
     const val=(isT&&st.dice)?st.dice:(LASTV[c]||6), btn=el("button","dbtn"), wrap=el("div","dwrap"), cube=el("div","cube");
-    [1,2,3,4,5,6].forEach(n=>cube.append(el("div","cf cf"+n,String(n)))); wrap.append(cube); const sh=el("div","dsh2"); btn.append(wrap,sh);
+    [1,2,3,4,5,6].forEach(n=>{ const f=el("div","cf cf"+n); setPips(f,n); cube.append(f); }); wrap.append(cube); const sh=el("div","dsh2"); btn.append(wrap,sh);
     const canRoll=isT&&myTurn&&st.phase==="roll"; btn.disabled=!canRoll; if(canRoll) btn.classList.add("ready"); btn.onclick=()=>ludoRoll(clone(st));
     if(isT&&animate&&use3){ poseCube(cube,prevVal[c]||6,false); setTimeout(()=>{ cube.style.transition="transform .45s"; poseCube(cube,st.dice,false); },1350); }
     else if(isT&&animate){ poseCube(cube,prevVal[c]||6,false); if(lastSnd!==st.rollN) sndDice(); lastSnd=st.rollN; throwDie(wrap,cube,sh,st.dice); }
@@ -4771,15 +4823,19 @@ let GC={key:"",un:null,msgs:[],ids:null,open:false,unread:0,bot:false,cid:""};
 const GCQ=["👍","😂","🔥","😎","😡","👏","حظ سعيد 🍀","لعبة حلوة!","بسرعة 😅","يا للأسف","مبروك 🎉","جولة ثانية؟"], GCBOT=["😄","حظ سعيد! 🍀","لعبة حلوة 👌","سأفوز هذه المرة 😎","فكّر جيداً 🤔","ما شاء الله عليك 👏","هههه 😂"];
 function gcPlayers(st){ if(!st) return []; if(st.kind==="ludo") return Object.values(st.players||{}); if(st.kind==="xo") return [st.X,st.O].filter(Boolean); return [st.players&&st.players.A,st.players&&st.players.B].filter(Boolean); }
 function gcStop(){ try{ if(GC.un) GC.un(); }catch(e){} GC={key:"",un:null,msgs:[],ids:null,open:false,unread:0,bot:false,cid:""}; if(gameOv) gameOv.querySelectorAll(".gchat,.gchb").forEach(x=>x.remove()); }
+function gcSubscribe(){ if(GC.un) return; GC.cid="g"+gtid; GC.ids=null;
+  try{ GC.un=db.collection("dms/"+GC.cid+"/msgs").orderBy("t","asc").limit(80).onSnapshot(sn=>{ const docs=sn.docs, fresh=[]; GC.msgs=docs.map(d=>d.data());
+      if(GC.ids===null) GC.ids=new Set(docs.map(d=>d.id)); else docs.forEach(d=>{ if(!GC.ids.has(d.id)){ GC.ids.add(d.id); const m=d.data(); if(m.from!==uid) fresh.push(m); } });
+      if(fresh.length) gcIncoming(fresh[fresh.length-1],fresh.length); if(GC.open) gcRenderList(); }); }catch(e){} }
 function gcSetup(st){
   if(!st||st.status==="waiting"||!gameOv){ if(GC.key) gcStop(); return; }
   const pls=gcPlayers(st); if(!pls.some(q=>q&&q.uid===uid)){ if(GC.key) gcStop(); return; }
-  const hum=[...new Set(pls.map(q=>q.uid).filter(u=>u&&u!=="bot"))].sort(), key=gtid+"|"+hum.join(",");
-  if(GC.key===key) return; gcStop(); GC.key=key; GC.bot=hum.length<2;
-  if(!GC.bot){ GC.cid="g"+gtid+"_"+hum.join("_");
-    try{ GC.un=db.collection("dms/"+GC.cid+"/msgs").orderBy("t","asc").limit(80).onSnapshot(sn=>{ const docs=sn.docs, fresh=[]; GC.msgs=docs.map(d=>d.data());
-        if(GC.ids===null) GC.ids=new Set(docs.map(d=>d.id)); else docs.forEach(d=>{ if(!GC.ids.has(d.id)){ GC.ids.add(d.id); const m=d.data(); if(m.from!==uid) fresh.push(m); } });
-        if(fresh.length) gcIncoming(fresh[fresh.length-1],fresh.length); if(GC.open) gcRenderList(); }); }catch(e){} } }
+  const hum=[...new Set(pls.map(q=>q.uid).filter(u=>u&&u!=="bot"))], key="g"+gtid, bot=hum.length<2;
+  if(GC.key!==key){ gcStop(); GC.key=key; }
+  GC.bot=bot;
+  if(!bot) gcSubscribe();
+  else if(GC.un){ try{ GC.un(); }catch(e){} GC.un=null; GC.msgs=[]; GC.ids=null; }
+}
 function gcBtn(){ const b=el("button","rb gcbtn","💬"); if(GC.unread) b.append(el("span","bd",String(GC.unread))); b.onclick=()=>{ if(GC.open) gcClose(); else gcOpen(); }; return b; }
 function gcClose(){ GC.open=false; if(gameOv) gameOv.querySelectorAll(".gchat").forEach(x=>x.remove()); }
 function gcRenderList(){ const ls=gameOv&&gameOv.querySelector(".gch-l"); if(!ls) return; ls.innerHTML="";
@@ -4797,7 +4853,7 @@ function gcIncoming(m,n){ if(GC.open){ try{ bell(988,.2,.04); }catch(e){} return
   setTimeout(()=>d.classList.add("out"),3200); setTimeout(()=>d.remove(),3700); try{ bell(988,.25,.05); }catch(e){} }
 async function gcSend(text){ text=String(text||"").trim().slice(0,140); if(!text||!GC.key) return; const m={from:uid,name:prof.name,text:text,t:Date.now()};
   if(GC.bot){ GC.msgs.push(m); gcRenderList(); const rp=GCBOT[Math.floor(Math.random()*GCBOT.length)], key=GC.key;
-    setTimeout(()=>{ if(GC.key!==key) return; const b={from:"bot",name:"الكمبيوتر",text:rp,t:Date.now()}; GC.msgs.push(b); if(GC.open) gcRenderList(); else gcIncoming(b,1); },1200+Math.random()*1400); return; }
+    setTimeout(()=>{ if(GC.key!==key||!GC.bot) return; const b={from:"bot",name:"الكمبيوتر",text:rp,t:Date.now()}; GC.msgs.push(b); if(GC.open) gcRenderList(); else gcIncoming(b,1); },1200+Math.random()*1400); return; }
   try{ await db.collection("dms/"+GC.cid+"/msgs").add(m); }catch(e){ toast("تعذّر إرسال الرسالة"); } }
 function crReveal(st){ cr.rev={t0:performance.now(),a:st.anim}; cr.osx=st.anim.sx; cancelAnimationFrame(cr.raf); beep(520,380,.05,.07); const sq=st.anim.seq;
   const loop=()=>{ if(!cr.rev) return; crRender(); if(performance.now()-cr.rev.t0>=950){ cr.rev=null; const s=cr.st; if(s&&s.anim&&s.anim.seq===sq) crStartSim(s); else crRender(); } else cr.raf=requestAnimationFrame(loop); };
