@@ -6,8 +6,8 @@
 <title>تسلية</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@900&display=swap&text=%D8%AA%D8%B3%D9%84%D9%8A%D8%A9">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#070b24">
-<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#bfe3ff">
+<meta name="color-scheme" content="light">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1379,7 +1379,6 @@ body.kb .room-screen *,body.kb .room-screen *::before,body.kb .room-screen *::af
 /* ---- light theme: white interior, bright colored icons, gold frame ---- */
 :root{--bg:#ffffff;--card:#ffffff;--tx:#1e1b4b;--mut:#64748b;--pri:#7c3aed;--gold:#b7791f;--line:#e5e7eb}
 body{background:#ffffff!important;color:var(--tx)}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:99999;border:7px solid transparent;border-image:linear-gradient(135deg,#fde68a,#d4af37,#b8860b,#fef3c7,#d4af37) 1}
 .card{background:#fff;box-shadow:0 4px 14px #0f172a14;border:1px solid #e5e7eb}
 .coins{background:#fff7e0;color:#92400e;border-color:#f5c542}
 .msg{background:#f1f5ff;color:var(--tx)}
@@ -1400,6 +1399,42 @@ input,textarea{background:#fff;color:var(--tx);border-color:#d1d5db}
 .scirc:nth-child(4n+2) .sci{background:linear-gradient(135deg,#fce7f3,#fbcfe8)!important}
 .scirc:nth-child(4n+3) .sci{background:linear-gradient(135deg,#dcfce7,#bbf7d0)!important}
 .scirc:nth-child(4n) .sci{background:linear-gradient(135deg,#ffedd5,#fed7aa)!important}
+.nav button{border:2px solid #d4af37!important;border-radius:16px;margin:4px 3px;box-shadow:0 2px 8px #0f172a1f}
+.tile,.sci,.fb,.rb,.gbtn{border:2px solid #d4af37!important;box-shadow:0 3px 10px #0f172a22}
+
+
+:root{color-scheme:light}
+
+/* top header bars: light blue on every page */
+div.top,.hdr,.gh{background:#bfe3ff!important;color:#0c2d57!important;border-radius:16px;padding:8px 10px}
+div.top{clip-path:none!important;transform:none!important}
+div.top .coins{background:#ffffff!important;color:#92400e!important}
+
+
+/* section tiles (owner panel sections): light turquoise / sky / pink */
+.tile:nth-child(4n+1){background:#ccfbf1!important}
+.tile:nth-child(4n+2){background:#e0f2fe!important}
+.tile:nth-child(4n+3){background:#fce7f3!important}
+.tile:nth-child(4n){background:#cffafe!important}
+
+
+/* ---- depth: tiles and buttons look like raised 3D slabs and press down ---- */
+.tile,.sci,.fb,.rb,.gbtn,.btn{transition:transform .18s ease,box-shadow .18s ease}
+.tile{box-shadow:0 7px 0 #94a3b8,0 12px 20px #0f172a33!important}
+.tile:active{transform:translateY(4px)!important;box-shadow:0 2px 0 #94a3b8,0 4px 10px #0f172a33!important}
+.sci{box-shadow:0 6px 0 #94a3b8,0 10px 18px #0f172a2e!important}
+.sci:active{transform:translateY(3px)!important;box-shadow:0 2px 0 #94a3b8,0 4px 8px #0f172a2e!important}
+.btn{box-shadow:0 6px 0 #5b21b6,0 10px 18px #7c3aed55}
+.btn:active{transform:translateY(4px)!important;box-shadow:0 2px 0 #5b21b6!important}
+.card{box-shadow:0 8px 0 -3px #e2e8f0,0 16px 26px #0f172a1f}
+.tilt-on{will-change:transform}
+/* ---- gifts: 3D entrance (flip up out of the screen with a gold glow) ---- */
+#gpops{perspective:900px;perspective-origin:50% 60%}
+.gpop{transform-style:preserve-3d;animation:gpin3d .95s cubic-bezier(.18,.9,.25,1.25) both!important;box-shadow:0 16px 34px #000b,0 0 26px #fde68a99!important}
+@keyframes gpin3d{0%{transform:perspective(900px) rotateX(-85deg) rotateY(35deg) translateY(170px) scale(.25);opacity:0}
+  45%{transform:perspective(900px) rotateX(12deg) rotateY(-10deg) translateY(-8px) scale(1.12);opacity:1}
+  70%{transform:perspective(900px) rotateX(-4deg) rotateY(3deg) scale(.98)}
+  100%{transform:perspective(900px) rotateX(0) rotateY(0) scale(1);opacity:1}}
 
 </style>
 </head>
@@ -1435,7 +1470,7 @@ async function loadWallet(){
   const w=await walletRef().get();
   if(w.exists){ const d=w.data(); coins=d.coins||0; EARN=d.earn||{}; } else { coins=0; EARN={}; await walletRef().set({coins:0,granted:0,earn:{}}); }
 }
-async function setCoins(n){ coins=Math.max(0,r2(n)); try{ await walletRef().update({coins}); }catch(e){ await walletRef().set({coins,granted:0,earn:EARN||{}}); } }
+async function setCoins(n){ coins=Math.max(0,r2(n)); try{ const g0=document.getElementById("gtot"); if(g0) g0.textContent=fmt(coins); }catch(_){} try{ await walletRef().update({coins}); }catch(e){ await walletRef().set({coins,granted:0,earn:EARN||{}}); } }
 async function credit(to,amt,kind){ if(!amt) return; try{ await db.collection("credits").add({to,amt:r2(amt),kind,from:uid,t:Date.now()}); }catch(e){} }
 let LEDGER=null;
 function logTx(k,a,w,e){ a=r2(a); if(!a&&!e) return; const t=Date.now(), id="lg_"+t+"_"+Math.random().toString(36).slice(2,6), x={k:k,a:a,t:t,e:r2(e||0)}; if(w) x.w=w;
@@ -1454,7 +1489,7 @@ async function claimCredits(){
     const all=[].concat(...Object.values(CRD)).filter(d=>!seenCred.has(d.id)); if(!all.length) return;
     let sum=0; const earn=Object.assign({},EARN);
     all.forEach(d=>{ const x=d.data(); sum+=x.amt; earn[x.kind]=r2((earn[x.kind]||0)+x.amt); logTx(x.kind,x.amt,x.from,x.amt); seenCred.add(d.id); });
-    coins=Math.max(0,r2(coins+sum)); EARN=earn; await walletRef().update({coins,earn});
+    coins=Math.max(0,r2(coins+sum)); try{ const g0=document.getElementById("gtot"); if(g0) g0.textContent=fmt(coins); }catch(_){} EARN=earn; await walletRef().update({coins,earn});
     for(const d of all){ try{ await db.doc("credits/"+d.id).delete(); }catch(e){} }
     if(sum>=.01 && !all.every(d=>d.data().kind==="roomshare")) toast("🪙 وصلك "+fmtc(sum)+" نقطة"); if(!room&&!dm) render();
   } finally{ claimingC=false; if([].concat(...Object.values(CRD)).some(d=>!seenCred.has(d.id))) claimCredits(); }
@@ -2039,14 +2074,17 @@ function sheetTheme(){ sheet("خلفية البروفايل",(c,close)=>{
     b.onclick=async()=>{await saveProf({bg:i}); close(); render();}; g.append(b)}); c.append(g); }); }
 const PKGS=[100,500,1000,5000];
 let claiming=false;
-async function claimGrant(tot,deb,by){ if(OWNER||claiming) return; claiming=true;
+let GRANT_Q=null;
+async function claimGrant(tot,deb,by){ if(OWNER) return; if(claiming){ GRANT_Q={tot:tot,deb:deb,by:by}; return; } claiming=true;
   try{ const w=await walletRef().get(), wd=w.exists?w.data():{}, claimed=wd.granted||0, debited=wd.debited||0; let c0=wd.coins||0, add=0, took=0; const patch={};
     if(tot>claimed){ add=r2(tot-claimed); c0=r2(c0+add); patch.granted=tot; }
-    if((deb||0)>debited){ took=Math.min(r2(deb-debited),c0); c0=r2(c0-took); patch.debited=deb; }
+    // only what was actually taken is marked as applied; any unpaid remainder stays pending until the balance allows it
+    if((deb||0)>debited){ took=Math.min(r2(deb-debited),c0); c0=r2(c0-took); if(took>0) patch.debited=r2(debited+took); }
     if(Object.keys(patch).length){ patch.coins=c0; coins=c0; await walletRef().update(patch); if(add) logTx("granted",add,by); if(took>0) logTx("deducted",-took,by);
       if(took>0&&by){ try{ await credit(by,took,"deduct"); }catch(e){ try{ await credit(by,took,"deduct"); }catch(_){} } }
       if(add) toast("🪙 أُضيفت "+fmtc(add)+" عملة إلى رصيدك"); if(took>0) toast("🪙 خُصمت "+fmtc(took)+" عملة من رصيدك"); render(); } }
-  finally{ claiming=false; } }
+  catch(e){ console.warn("grant",e); }
+  finally{ claiming=false; if(GRANT_Q){ const q=GRANT_Q; GRANT_Q=null; claimGrant(q.tot,q.deb,q.by); } } }
 async function grantTo(u,n){
   if(coins<n){ toast("رصيد محفظة الحساب لا يكفي — اسحب من المحفظة الرئيسية"); return false; }
   await setCoins(coins-n); EARN.sold=r2((EARN.sold||0)+n); logTx("sold",-n,u,n); try{ await walletRef().update({earn:EARN}); }catch(e){}
@@ -3040,6 +3078,8 @@ function userMenu(u,nm){ if(!u||!room) return; const P=PROFS[u]||{}, name=P.name
       ar.append(k,b);
       if(OWNER||room.owner===uid){ const pm=el("button","umpm","الصلاحيات"); pm.onclick=()=>{ close(); sheetMods(); }; ar.append(pm); }
       c.append(ar); } }); }
+// نسب توزيع الهدية: المستلم = نسبة من سعر كل مستلم، صاحب الغرفة = نسبة من الإجمالي، الباقي للدعم (حساب التطبيق)
+const GIFT_SPLIT={recip:.30,room:.20};
 function openGifts(preUid){
   const o=el("div","ov"); o.onclick=e=>{ if(e.target===o) o.remove(); };
   const p=el("div","gpanel"); o.append(p); document.body.append(o);
@@ -3077,7 +3117,7 @@ function openGifts(preUid){
     send.onclick=async()=>{
       if(!pick||sending) return; const g=pick, targets=rc.filter(r=>sel.has(r.uid)), total=g[2]*qty*targets.length, label=labelOf();
       if(coins<total) return toast(OWNER?"رصيد محفظة الحساب لا يكفي — اسحب من المحفظة الرئيسية":"رصيدك لا يكفي");
-      sending=true; send.disabled=true; let rec=null; const before=coins, per=g[2]*qty, sh=r2(per*.30), n=targets.length, rshare=r2(total*.20), oshare=r2(total-sh*n-rshare);
+      sending=true; send.disabled=true; let rec=null; const before=coins, per=g[2]*qty, sh=r2(per*GIFT_SPLIT.recip), n=targets.length, rshare=r2(total*GIFT_SPLIT.room), oshare=r2(total-sh*n-rshare);
       const msg={type:"gift",uid,emoji:prof.emoji,name:prof.name,amt:total,gid:g[6],qty:qty,to:label,gn:g[1],text:prof.name+" أرسل "+g[0]+" "+g[1]+(qty>1?" ×"+qty:"")+(n>1?" إلى "+n+" مستلمين":"")+" إلى "+label,t:Date.now()};
       o.remove(); toast("تم إرسال الهدية ✓");
       try{
@@ -3227,7 +3267,7 @@ function drawChatNow(){
   while(c.children.length>i) c.lastChild.remove();
   if(i<want.length){ const fr=document.createDocumentFragment(); for(let j=i;j<want.length;j++) fr.append(want[j]); c.append(fr); }
   if(near){ if(had&&c.scrollTo&&i<want.length) c.scrollTo({top:c.scrollHeight,behavior:"smooth"}); else c.scrollTop=c.scrollHeight; }
-  const gt2=document.getElementById("gtot"); if(gt2){ const mine=topRows.find(r=>r.uid===uid); gt2.textContent=fmt(mine?(mine.tot||0):(twMine[wkKey()]||0)); }
+  const gt2=document.getElementById("gtot"); if(gt2) gt2.textContent=fmt(coins);
 }
 let topRows=[], topList=[], topRank={}, unsubTop=null, joinT=0, BOARD=null, twWk=null, unsubTW=null, twMine={}, bumpQ=Promise.resolve();
 const wkKey=()=>String(satMid().getTime());
@@ -5318,22 +5358,15 @@ addEventListener("popstate",()=>{
 
 main();
 
-/* back button: close the top layer first, then go back to home, and only exit on a second press */
-(function(){
-  try{ history.replaceState({tl:0},""); history.pushState({tl:1},""); }catch(e){}
-  let lastBack=0;
-  window.addEventListener("popstate",function(){
-    try{
-      if(typeof gameOv!=="undefined"&&gameOv){ closeGame(); }
-      else if(room){ closeRoom(); }
-      else if(typeof dmOv!=="undefined"&&dmOv){ dmClose(); }
-      else if(SHEET_HOST&&SHEET_HOST.classList.contains("open")){ dropClose(SHEET_HOST); }
-      else if(document.querySelector(".ov")){ const all=document.querySelectorAll(".ov"); all[all.length-1].remove(); }
-      else if(tab!=="home"){ tab="home"; render(); }
-      else { const now=Date.now(); if(now-lastBack<2000){ history.back(); return; } lastBack=now; toast("اضغط الرجوع مرة أخرى للخروج"); }
-    }catch(e){}
-    try{ history.pushState({tl:1},""); }catch(e){}
-  });
+
+/* ---- 3D tilt: a tile or icon leans toward the finger while pressed ---- */
+(function(){ let T=null; const hit=e=>{ const t=e.target; return t&&t.closest?t.closest(".tile,.sci,.tilt"):null; };
+  document.addEventListener("pointerdown",e=>{ if(e.pointerType==="mouse"&&e.button!==0) return; T=hit(e); if(T) T.classList.add("tilt-on"); },{passive:true});
+  document.addEventListener("pointermove",e=>{ if(!T||!T.isConnected) return; const r=T.getBoundingClientRect(); if(!r.width) return;
+    const x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+    T.style.transform="perspective(520px) rotateX("+(-y*18).toFixed(2)+"deg) rotateY("+(x*18).toFixed(2)+"deg) translateY(3px)"; },{passive:true});
+  const end=()=>{ if(T){ T.style.transform=""; T.classList.remove("tilt-on"); T=null; } };
+  document.addEventListener("pointerup",end,{passive:true}); document.addEventListener("pointercancel",end,{passive:true});
 })();
 </script>
 <style>
