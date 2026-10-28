@@ -1484,6 +1484,8 @@ body:has(.gfx-em) .gcard,body:has(.gfx-em) .win-card,body:has(.gfx-em) .guide{fi
 
 /* نسبة الحب: الشريط والقلوب */
 .chbar{left:4px!important;right:4px!important;padding:12px 14px!important;min-height:64px}
+.chbar.live,.chbar.ann,.chbar.done{display:flex!important}
+.chbar.live,.chbar.ann,.chbar.done{display:flex!important}
 .chbar.live{background:linear-gradient(90deg,#fde2e4 0%,#e0e7ff 100%)!important;align-items:center;justify-content:space-between}
 .chcol{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0}
 .chname{font-size:13px;font-weight:900;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#0b2540}
@@ -3245,7 +3247,7 @@ function renderRoom(a){
   const fl=el("div","fl"), chb=el("button","fb"); chb.innerHTML=icH("chat"); chb.onclick=()=>dmOverlay(); chb.append(nbd("dm"));
   const disc=el("button","fb disc"+((MUS.on&&!musMuted)?" spin":"")); disc.id="discb"; { const ds=el("span","dsc"); ds.innerHTML=icH("disc"); disc.append(ds); } disc.onclick=sheetMusic;
   const mic2=el("button","fb"); mic2.innerHTML=icH((mySeat()&&micMuted)?"micoff":"mic"); mic2.id="micb"; mic2.onclick=toggleMic;
-  const mm=el("button","fb chg"); mm.id="chgb"; mm.innerHTML=icH("bolt"); mm.title="إهداء النقاط"; mm.onclick=sheetCharge;
+  const mm=el("button","fb chg"); mm.id="chgb"; mm.innerHTML="<span style='font-size:26px;line-height:1'>💞</span>"; mm.title="نسبة حب"; mm.onclick=sheetChallenge;
   const gb=el("button","gbtn"); { const gi2=el("div","gico"); gi2.innerHTML=icH("gift"); gb.append(gi2,el("small",null,"0")); } gb.querySelector("small").id="gtot"; gb.onclick=openGifts;
   fl.append(chb,disc,mic2,mm,gb);
   const bar=el("div","rs-bar");
@@ -3496,7 +3498,6 @@ function openSettings(){
   sec("🛡️ الإشراف",[["🛡️","لوحة الإشراف","#818cf8",ownOnly(sheetMods)],["🔰","حماية الغرفة","#f59e0b",()=>toast("حماية الغرفة قريباً")],["🕘","سجل النشاط","#38bdf8",IN(sheetLog)]]);
   sec("⚙️ الإعدادات الثانوية",[["✏️","تغيير الاسم","#818cf8",INO(sheetRename)],["📝","وصف الغرفة","#818cf8",INO(()=>txtSheet("وصف الغرفة","desc","اكتب وصفاً للغرفة…","تعديل وصف الغرفة"))],["🖼️","صورة الغرفة","#818cf8",INO(sheetRoomPhoto)],
     ["🔒","قفل الغرفة","#fbbf24",INO(sheetLock)],["👋","رسالة الترحيب","#fbbf24",INO(()=>txtSheet("رسالة الترحيب","welcome","اكتب رسالة ترحيب للداخلين…","تعديل رسالة الترحيب"))],["🏞️","الخلفية","#818cf8",INO(sheetRoomBg)]]);
-  sec("💞 نسبة الحب",[["💞","نسبة حب","#f472b6",()=>{close();sheetChallenge();}]]);
   sec("⚠️ منطقة الخطر",[["🗑️","حذف الغرفة","#ef4444",INO(sheetDeleteRoom)]]);
 }
 const PRE=[["#4c1d95","#b8860b","👑"],["#0e7490","#22d3ee","🌊"],["#9a3412","#fbbf24","🔥"],["#065f46","#34d399","🌿"],["#9d174d","#f472b6","🌸"],["#1e293b","#64748b","🌙"],["#7c2d12","#f59e0b","🦁"],["#1e3a8a","#60a5fa","🦅"],["#581c87","#e879f9","🎵"],["#14532d","#a3e635","🐎"],["#7f1d1d","#f87171","🎮"],["#0f172a","#38bdf8","🚀"]];
