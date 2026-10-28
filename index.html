@@ -1482,14 +1482,17 @@ body:has(.gfx-em) .gcard,body:has(.gfx-em) .win-card,body:has(.gfx-em) .guide{fi
 .gfx-em{will-change:transform,opacity;contain:layout paint}
 
 
-/* challenge banners */
-.chbar{position:fixed;left:10px;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;display:none;align-items:center;gap:8px;padding:10px 12px;border-radius:20px;background:linear-gradient(90deg,#fff7d6,#ffe9f3);border:2px solid #d4af37;box-shadow:0 8px 22px #7c2d1233;color:#0b2540;font-weight:800;direction:rtl}
-.chbar.live,.chbar.ann,.chbar.done{display:flex}
-.chbar.live{background:linear-gradient(90deg,#ddd6fe,#fbcfe8);}
-.chbar.done{background:linear-gradient(90deg,#fde68a,#fdba74);}
-.chl{font-size:13px;color:#6d28d9;white-space:nowrap}
-.chv{flex:1;text-align:center;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cht{font-variant-numeric:tabular-nums;font-size:16px;color:#be185d;direction:ltr}
+/* نسبة الحب: الشريط والقلوب */
+.chbar{left:4px!important;right:4px!important;padding:12px 14px!important;min-height:64px}
+.chbar.live{background:linear-gradient(90deg,#fde2e4 0%,#e0e7ff 100%)!important;align-items:center;justify-content:space-between}
+.chcol{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0}
+.chname{font-size:13px;font-weight:900;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#0b2540}
+.chheart{font-size:58px;line-height:1.05;-webkit-background-clip:text;background-clip:text;color:transparent;margin:2px 0}
+.chamt{font-size:15px;font-weight:900;font-variant-numeric:tabular-nums;color:#0b2540}
+.chmid{display:flex;flex-direction:column;align-items:center;min-width:72px}
+.chvs{font-weight:900;font-size:20px;color:#7c3aed}
+.cht{font-size:16px;font-weight:900;color:#be185d;direction:ltr;font-variant-numeric:tabular-nums}
+.chl{font-size:14px;color:#6d28d9}
 .chtx{flex:1;font-size:13px;min-width:0}
 .chgo{border:0;border-radius:14px;padding:8px 12px;font-weight:900;color:#fff;background:linear-gradient(90deg,#8b5cf6,#ec4899);cursor:pointer;white-space:nowrap}
 .chx{border:0;background:#0000000f;border-radius:50%;width:26px;height:26px;cursor:pointer;color:#0b2540}
@@ -2743,7 +2746,7 @@ const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e3?(n/1e3).toFixed(1)+"K":String(
 const seatRef=i=>db.doc("rooms/"+room.id+"/seats/"+i);
 let unsubPres=null, presDocs=[], presFirst=true, presHB=null;
 let presSeen={};
-const presLive=()=>presDocs.filter(p=>{ const z=presSeen[p.uid]; return z&&Date.now()-z.seenAt<95000; });
+const presLive=()=>presDocs.filter(p=>p.room&&p.t&&Date.now()-p.t<95000);
 const fsErrShown={};
 window.__fsErr=function(path,e){ const c=(e&&e.code)||String(e); const k=String(path).split("/")[0]; if(fsErrShown[k]) return; fsErrShown[k]=1; try{ toast("خطأ بقاعدة البيانات ("+k+"): "+c); }catch(_){} };
 const presIn=rid=>presLive().filter(p=>p.room===rid);
@@ -3200,7 +3203,7 @@ function openGifts(preUid){
       if(!pick||sending) return; const g=pick, targets=rc.filter(r=>sel.has(r.uid)), total=g[2]*qty*targets.length, label=labelOf();
       if(coins<total) return toast(OWNER?"رصيد محفظة الحساب لا يكفي — اسحب من المحفظة الرئيسية":"رصيدك لا يكفي");
       sending=true; send.disabled=true; let rec=null; const before=coins, per=g[2]*qty, sh=r2(per*GIFT_SPLIT.recip), n=targets.length, rshare=r2(total*GIFT_SPLIT.room), oshare=r2(total-sh*n-rshare);
-      const msg={type:"gift",uid,emoji:prof.emoji,name:prof.name,amt:total,gid:g[6],qty:qty,to:label,gn:g[1],text:prof.name+" أرسل "+g[0]+" "+g[1]+(qty>1?" ×"+qty:"")+(n>1?" إلى "+n+" مستلمين":"")+" إلى "+label,t:Date.now()};
+      const msg={type:"gift",tos:targets.map(x=>x.uid),per:per,uid,emoji:prof.emoji,name:prof.name,amt:total,gid:g[6],qty:qty,to:label,gn:g[1],text:prof.name+" أرسل "+g[0]+" "+g[1]+(qty>1?" ×"+qty:"")+(n>1?" إلى "+n+" مستلمين":"")+" إلى "+label,t:Date.now()};
       o.remove(); toast("تم إرسال الهدية ✓");
       try{
         const [a1,b1]=await Promise.allSettled([db.collection("rooms/"+room.id+"/msgs").add(msg),setCoins(before-total)]);
@@ -3493,7 +3496,7 @@ function openSettings(){
   sec("🛡️ الإشراف",[["🛡️","لوحة الإشراف","#818cf8",ownOnly(sheetMods)],["🔰","حماية الغرفة","#f59e0b",()=>toast("حماية الغرفة قريباً")],["🕘","سجل النشاط","#38bdf8",IN(sheetLog)]]);
   sec("⚙️ الإعدادات الثانوية",[["✏️","تغيير الاسم","#818cf8",INO(sheetRename)],["📝","وصف الغرفة","#818cf8",INO(()=>txtSheet("وصف الغرفة","desc","اكتب وصفاً للغرفة…","تعديل وصف الغرفة"))],["🖼️","صورة الغرفة","#818cf8",INO(sheetRoomPhoto)],
     ["🔒","قفل الغرفة","#fbbf24",INO(sheetLock)],["👋","رسالة الترحيب","#fbbf24",INO(()=>txtSheet("رسالة الترحيب","welcome","اكتب رسالة ترحيب للداخلين…","تعديل رسالة الترحيب"))],["🏞️","الخلفية","#818cf8",INO(sheetRoomBg)]]);
-  sec("⚔️ التحديات",[["⚔️","جولة تحدي","#f472b6",()=>{close();sheetChallenge();}]]);
+  sec("💞 نسبة الحب",[["💞","نسبة حب","#f472b6",()=>{close();sheetChallenge();}]]);
   sec("⚠️ منطقة الخطر",[["🗑️","حذف الغرفة","#ef4444",INO(sheetDeleteRoom)]]);
 }
 const PRE=[["#4c1d95","#b8860b","👑"],["#0e7490","#22d3ee","🌊"],["#9a3412","#fbbf24","🔥"],["#065f46","#34d399","🌿"],["#9d174d","#f472b6","🌸"],["#1e293b","#64748b","🌙"],["#7c2d12","#f59e0b","🦁"],["#1e3a8a","#60a5fa","🦅"],["#581c87","#e879f9","🎵"],["#14532d","#a3e635","🐎"],["#7f1d1d","#f87171","🎮"],["#0f172a","#38bdf8","🚀"]];
@@ -5455,64 +5458,92 @@ main();
 /* Google-only accounts are offered a one-tap link to a password (same account, same balance) */
 setTimeout(()=>{ try{ if(window.__needLink&&!sessionStorage.getItem("lnkSkip")) sheetLinkPrompt(); }catch(_){} },4000);
 
-/* ===== جولة التحدي ===== */
+/* ===== نسبة الحب ===== */
 const CH_DUR=[1,2,3];
-function chSeated(){ return room? presIn(room.id).map(q=>{ const P=PROFS[q.uid]||{}; return {uid:q.uid,name:q.name||P.name||"مستخدم",emoji:P.emoji||"👤"}; }) : []; }
+function chPlayers(){ return room? presIn(room.id).map(q=>{ const P=PROFS[q.uid]||{}; return {uid:q.uid,name:q.name||P.name||"مستخدم",emoji:P.emoji||"👤"}; }) : []; }
 function sheetChallenge(){
   if(!room) return;
   if(!isMod()) return toast("للمالك والمشرفين فقط");
-  sheet("⚔️ جولة تحدي",(c,close)=>{
-    const pl=chSeated();
-    if(pl.length<2){ c.append(el("p","mut","يجب أن يكون في الغرفة لاعبان على الأقل لبدء التحدي.")); return; }
+  sheet("💞 نسبة حب",(c,close)=>{
+    const pl=chPlayers();
+    if(pl.length<2){ c.append(el("p","mut","يجب أن يكون في الغرفة لاعبان على الأقل لبدء نسبة الحب.")); return; }
     let dur=1;
-    const dl=el("div","mut","مدة الجولة"); c.append(dl);
+    c.append(el("div","mut","مدة الجولة"));
     const drow=el("div","chdur"); CH_DUR.forEach(m=>{ const b=el("button","chip"+(m===dur?" on":""),m+" دقيقة"); b.onclick=()=>{ dur=m; [...drow.children].forEach(x=>x.classList.remove("on")); b.classList.add("on"); }; drow.append(b); });
     c.append(drow);
     const mk=(lbl)=>{ const w=el("div"); w.append(el("div","mut",lbl)); const s=el("select"); s.style.cssText="width:100%;padding:10px;border-radius:12px;margin-top:4px"; pl.forEach(x=>{ const o=el("option",null,(x.emoji||"👤")+" "+x.name); o.value=x.uid; s.append(o); }); w.append(s); c.append(w); return s; };
     const sa=mk("اللاعب الأول"), sb=mk("اللاعب الثاني"); sb.selectedIndex=Math.min(1,pl.length-1);
-    const go=el("button","btn full","⚔️ ابدأ الجولة"); go.style.marginTop="12px";
+    const go=el("button","btn full","💞 ابدأ نسبة الحب"); go.style.marginTop="12px";
     go.onclick=async()=>{
       if(sa.value===sb.value) return toast("اختر لاعبين مختلفين");
       const A=pl.find(x=>x.uid===sa.value), B=pl.find(x=>x.uid===sb.value);
       const now=Date.now();
-      try{ await roomUpdate({chal:{id:String(now),rid:room.id,rname:room.name||"الغرفة",mins:dur,start:now,end:now+dur*60000,a:{uid:A.uid,name:A.name,emoji:A.emoji||"👤"},b:{uid:B.uid,name:B.name,emoji:B.emoji||"👤"}}},"بدء جولة تحدي ("+dur+" د)");
-        close(); toast("🔔 بدأت جولة التحدي"); }
+      try{ await roomUpdate({chal:{id:String(now),rid:room.id,rname:room.name||"الغرفة",mins:dur,start:now,end:now+dur*60000,a:{uid:A.uid,name:A.name,emoji:A.emoji||"👤"},b:{uid:B.uid,name:B.name,emoji:B.emoji||"👤"}}},"بدء نسبة الحب ("+dur+" د)");
+        close(); toast("💞 بدأت نسبة الحب"); }
       catch(e){ toast("تعذر بدء الجولة"); }
     };
     c.append(go);
   });
 }
-const CHS={};
-function chalOf(r){ return r&&r.chal&&r.chal.end>Date.now()? r.chal : null; }
+const CHD={}, CHSHOWN={};
+function chOf(r){ return r&&r.chal&&r.chal.end>Date.now()? r.chal : null; }
 function chalBarEl(){ let b=document.getElementById("chalBar"); if(!b){ b=document.createElement("div"); b.id="chalBar"; b.className="chbar"; document.body.append(b); } return b; }
-function chalTick(){
-  const b=chalBarEl();
-  // in the current room: show the live countdown
-  const cur=room?rooms.find(r=>r.id===room.id):null;
-  const cc=cur&&cur.chal;
-  if(cc && cc.end>Date.now()){
-    const s=Math.max(0,Math.floor((cc.end-Date.now())/1000)), t=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
-    b.className="chbar live"; b.innerHTML=""; 
-    b.append(el("div","chl","⚔️ جولة تحدي"), el("div","chv",(cc.a.emoji||"")+" "+cc.a.name+"  VS  "+(cc.b.emoji||"")+" "+cc.b.name), el("div","cht",t));
-    return;
-  }
-  if(cc && cc.end<=Date.now() && cc.end+8000>Date.now()){
-    b.className="chbar done"; b.innerHTML=""; b.append(el("div","chl","🏁 انتهت جولة التحدي"));
-    return;
-  }
-  // in other rooms: announce a running round once
-  if(!room || !b.dataset.show){
-    const other=rooms.find(r=>chalOf(r) && (!room||r.id!==room.id) && !CHS[r.chal.id]);
-    if(other){
-      const ch=other.chal; b.className="chbar ann"; b.innerHTML="";
-      const x=el("button","chx","✕"); x.onclick=()=>{ CHS[ch.id]=1; b.className="chbar"; b.innerHTML=""; };
-      const go=el("button","chgo","انضم الآن");
-      go.onclick=()=>{ CHS[ch.id]=1; b.className="chbar"; b.innerHTML=""; enterRoom(other); };
-      b.append(x, el("div","chtx", "🔔 بدأت جولة تحدي في غرفة «"+(other.name||"")+"» — "+ch.mins+" دقيقة"), go);
-    } else if(b.className.indexOf("ann")>=0 && !b.innerHTML.trim()){ b.className="chbar"; }
-  }
+async function chGet(c,force){
+  const d=CHD[c.id]; const done=c.end<=Date.now();
+  if(d&&!force&&(done||Date.now()-d.t<3000)) return d.v;
+  const sc={}; sc[c.a.uid]=0; sc[c.b.uid]=0; const sup={};
+  try{
+    const sn=await db.collection("rooms/"+c.rid+"/msgs").where("t",">=",c.start).where("t","<=",c.end+3000).get();
+    sn.docs.forEach(x=>{ const m=x.data(); if(m.type!=="gift"||!Array.isArray(m.tos)) return;
+      m.tos.forEach(t=>{ if(sc[t]===undefined) return; sc[t]+=(m.per||0);
+        const k=m.uid; sup[k]=sup[k]||{name:m.name||"مستخدم",emoji:m.emoji||"👤",amt:0}; sup[k].amt+=(m.per||0); }); });
+  }catch(e){}
+  const v={sc:sc,sup:sup}; CHD[c.id]={t:Date.now(),v:v}; return v;
 }
-setInterval(chalTick,1000);
+function chCol(p,score,fill,color){
+  const col=el("div","chcol"); col.append(el("div","chname",(p.emoji||"")+" "+p.name));
+  const h=el("div","chheart","❤"); h.style.backgroundImage="linear-gradient(to top,"+color+" "+fill+"%,#ffffff55 "+fill+"%)";
+  col.append(h, el("div","chamt",score+" ♥"));
+  return col;
+}
+function chRender(b,cc,v){
+  const A=(v&&v.sc[cc.a.uid])||0, B=(v&&v.sc[cc.b.uid])||0, mx=Math.max(A,B,1);
+  const s=Math.max(0,Math.floor((cc.end-Date.now())/1000)), t=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+  b.className="chbar live"; b.innerHTML="";
+  const mid=el("div","chmid"); mid.append(el("div","chvs","VS"), el("div","cht",t));
+  b.append(chCol(cc.a,A,Math.round(A/mx*100),"#e11d48"), mid, chCol(cc.b,B,Math.round(B/mx*100),"#2563eb"));
+}
+function chWinner(cc,v){
+  if(document.getElementById("chWin")) return;
+  const o=el("div","ov"); o.id="chWin"; const c=el("div","card sheet"); c.style.textAlign="center"; o.append(c); document.body.append(o);
+  const A=(v.sc[cc.a.uid])||0, B=(v.sc[cc.b.uid])||0;
+  if(A===B){ c.append(el("h3",null,"🤝 تعادل في نسبة الحب")); c.append(el("p","mut","تساوت النقاط المدعومة، وعادت النقاط للداعمين.")); }
+  else{ const w=A>B?cc.a:cc.b; c.append(el("div",null,"🏆"), el("h3",null,"الفائز: "+(w.emoji||"")+" "+w.name)); c.append(el("p","mut",Math.max(A,B)+" ♥  مقابل  "+Math.min(A,B)+" ♥")); }
+  const ls=Object.keys(v.sup).map(k=>v.sup[k]).sort((x,y)=>y.amt-x.amt).slice(0,3);
+  if(ls.length){ c.append(el("div","mut","🏅 أعلى الداعمين")); ls.forEach((x,i)=>{ const r=el("div"); r.style.cssText="display:flex;justify-content:space-between;padding:6px 4px;border-bottom:1px solid #0001"; r.append(el("span",null,(i+1)+". "+(x.emoji||"")+" "+x.name), el("b",null,x.amt+" ♥")); c.append(r); }); }
+  const cb=el("button","btn full","إغلاق"); cb.style.marginTop="12px"; cb.onclick=()=>o.remove(); c.append(cb);
+}
+async function chTick(){
+  const b=chalBarEl();
+  const cur=room?rooms.find(r=>r.id===room.id):null, cc=cur&&cur.chal;
+  if(cc && cc.end>Date.now()){ const v=await chGet(cc,false); const c2=room&&rooms.find(r=>r.id===room.id); if(c2&&c2.chal&&c2.chal.id===cc.id) chRender(b,cc,v); return; }
+  if(cc && !CHSHOWN[cc.id]){
+    CHSHOWN[cc.id]=1; const v=await chGet(cc,true);
+    b.className="chbar done"; b.innerHTML=""; b.append(el("div","chl","🏁 انتهت نسبة الحب"));
+    chWinner(cc,v); setTimeout(()=>{ if(b.className.indexOf("done")>=0){ b.className="chbar"; b.innerHTML=""; } },8000);
+    return;
+  }
+  // other rooms: announce a running round once
+  const other=rooms.find(r=>chOf(r) && (!room||r.id!==room.id) && !CHSHOWN["ann"+r.chal.id]);
+  if(other && b.className.indexOf("live")<0 && b.className.indexOf("done")<0){
+    const ch=other.chal; b.className="chbar ann"; b.innerHTML="";
+    const x=el("button","chx","✕"); x.onclick=()=>{ CHSHOWN["ann"+ch.id]=1; b.className="chbar"; b.innerHTML=""; };
+    const go=el("button","chgo","انضم الآن");
+    go.onclick=()=>{ CHSHOWN["ann"+ch.id]=1; b.className="chbar"; b.innerHTML=""; enterRoom(other); };
+    b.append(x, el("div","chtx","💞 بدأت نسبة الحب في غرفة «"+(other.name||"")+"» — "+ch.mins+" دقيقة"), go);
+  } else if(!other && b.className.indexOf("ann")>=0){ b.className="chbar"; b.innerHTML=""; }
+}
+setInterval(chTick,1000);
 </script>
 <style>
 #gate{background:#070b24 center top/cover no-repeat}
