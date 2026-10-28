@@ -5486,7 +5486,7 @@ function sheetChallenge(){
     c.append(go);
   });
 }
-const CHD={}, CHSHOWN={};
+const CHD={}, CHSHOWN={}, CHLIVE={};
 function chOf(r){ return r&&r.chal&&r.chal.end>Date.now()? r.chal : null; }
 function chalBarEl(){ let b=document.getElementById("chalBar"); if(!b){ b=document.createElement("div"); b.id="chalBar"; b.className="chbar"; document.body.append(b); } return b; }
 async function chGet(c,force){
@@ -5527,9 +5527,9 @@ function chWinner(cc,v){
 async function chTick(){
   const b=chalBarEl();
   const cur=room?rooms.find(r=>r.id===room.id):null, cc=cur&&cur.chal;
-  if(cc && cc.end>Date.now()){ const v=await chGet(cc,false); const c2=room&&rooms.find(r=>r.id===room.id); if(c2&&c2.chal&&c2.chal.id===cc.id) chRender(b,cc,v); return; }
+  if(cc && cc.end>Date.now()){ CHLIVE[cc.id]=1; const v=await chGet(cc,false); const c2=room&&rooms.find(r=>r.id===room.id); if(c2&&c2.chal&&c2.chal.id===cc.id) chRender(b,cc,v); return; }
   if(cc && !CHSHOWN[cc.id]){
-    CHSHOWN[cc.id]=1; const v=await chGet(cc,true);
+    CHSHOWN[cc.id]=1; if(!CHLIVE[cc.id]) return; const v=await chGet(cc,true);
     b.className="chbar done"; b.innerHTML=""; b.append(el("div","chl","🏁 انتهت نسبة الحب"));
     chWinner(cc,v); setTimeout(()=>{ if(b.className.indexOf("done")>=0){ b.className="chbar"; b.innerHTML=""; } },8000);
     return;
