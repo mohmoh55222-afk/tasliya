@@ -1483,6 +1483,7 @@ body:has(.gfx-em) .gcard,body:has(.gfx-em) .win-card,body:has(.gfx-em) .guide{fi
 
 
 /* نسبة الحب: الشريط والقلوب */
+.chbar{position:fixed;left:10px;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;display:none;align-items:center;gap:8px;padding:10px 12px;border-radius:20px;background:linear-gradient(90deg,#fff7d6,#ffe9f3);border:2px solid #d4af37;box-shadow:0 8px 22px #7c2d1233;color:#0b2540;font-weight:800;direction:rtl}
 .chbar{left:4px!important;right:4px!important;padding:12px 14px!important;min-height:64px}
 .chbar.live,.chbar.ann,.chbar.done{display:flex!important}
 .chbar.live,.chbar.ann,.chbar.done{display:flex!important}
@@ -1499,6 +1500,11 @@ body:has(.gfx-em) .gcard,body:has(.gfx-em) .win-card,body:has(.gfx-em) .guide{fi
 .chgo{border:0;border-radius:14px;padding:8px 12px;font-weight:900;color:#fff;background:linear-gradient(90deg,#8b5cf6,#ec4899);cursor:pointer;white-space:nowrap}
 .chx{border:0;background:#0000000f;border-radius:50%;width:26px;height:26px;cursor:pointer;color:#0b2540}
 .chdur{display:flex;gap:8px;margin:6px 0 10px}
+
+/* real pip layout on the 3D cube faces (Ludo and snakes dice) */
+.cf{display:grid!important;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:16%;gap:6%;align-items:stretch;justify-items:stretch}
+.cf i{display:block;border-radius:50%;background:transparent;width:100%;height:100%;margin:0}
+.cf i.p{background:radial-gradient(circle at 35% 30%,#475569,#0f172a)}
 
 </style>
 <link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap">
