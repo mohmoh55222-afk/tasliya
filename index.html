@@ -1531,6 +1531,17 @@ body:has(.gfx-em) .gcard,body:has(.gfx-em) .win-card,body:has(.gfx-em) .guide{fi
 .chtl span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chtl .chav{width:32px;height:32px;flex-basis:32px}
 
+
+
+.chav{width:30px;height:30px;flex:0 0 30px;font-size:18px}
+.chwn .chav{width:76px;height:76px;flex-basis:76px;font-size:40px}
+.chtl .chav{width:40px;height:40px;flex-basis:40px}
+
+.chbar{top:calc(100px + env(safe-area-inset-top,0px))}
+
+.gfx-v3{background:transparent!important}
+.gfx-blend video{background:transparent!important}
+.gfx-vid2,.gfx-vid{background:transparent!important}
 </style>
 <link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap">
 </head>
@@ -5610,8 +5621,8 @@ async function chPayout(cc){
       const w=A>B?cc.a.uid:cc.b.uid, ws=r2(pot*0.4);
       ps.push(credit(w,ws,"challenge"), credit(owner,rs,"challenge"), credit("__app__",r2(pot-ws-rs),"challenge"));
     }
-    await Promise.all(ps);
-  }catch(e){}
+    await Promise.all(ps); toast("🏆 تم توزيع جائزة نسبة الحب");
+  }catch(e){ toast("تعذر توزيع جائزة نسبة الحب: "+((e&&e.message)||e)); }
 }
 setInterval(chTick,1000);
 </script>
