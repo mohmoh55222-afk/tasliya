@@ -3102,7 +3102,7 @@ function sheetGiftAssets(){ sheet("🎁 ملفات الهدايا الاحترا
 
 let GIFT_IMG={};
 const GIFT_VID={};
-const ASSET_V="24";
+const ASSET_V="25";
 function adoptAssets(){ let ch=false; const g=window.__AG, f=window.__AF;
   if(g&&!adoptAssets.g){ adoptAssets.g=1; GIFT_IMG=g.GIFT_IMG||{}; GIFT_ART=g.GIFT_ART||{}; GIFT_TH=g.GIFT_TH||{}; ch=true; }
   if(f&&!adoptAssets.f){ adoptAssets.f=1; GIFT_MP4=f.GIFT_MP4||{}; GIFT_SFX=f.GIFT_SFX||{}; } return ch; }
@@ -5559,7 +5559,7 @@ function chRender(b,cc,v){
   const s=Math.max(0,Math.floor((cc.end-Date.now())/1000)), t=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
   b.className="chbar live"; b.innerHTML="";
   const mid=el("div","chmid"); mid.append(el("div","chvs","VS"), el("div","cht",t));
-  const pct=(x)=>x>0?Math.round(Math.pow(x/mx,1.6)*100):0;
+  const pct=(x)=>Math.round(100*(1-Math.exp(-x/50000)));
   b.append(chCol(cc.a,A,pct(A),"#e11d48"), mid, chCol(cc.b,B,pct(B),"#2563eb"));
 }
 function chWinner(cc,v){
