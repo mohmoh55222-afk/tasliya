@@ -1590,6 +1590,10 @@ body:has(.gfx-em) .gcard,body:has(.gfx-em) .win-card,body:has(.gfx-em) .guide{fi
 .spkwrap{padding:18px 6px 30px;display:flex;justify-content:center}.spk{position:relative;width:min(92vw,520px);border-radius:28px;padding:30px 22px 22px;text-align:center;color:#fff;background:linear-gradient(135deg,var(--g1),var(--g2) 55%,var(--g3));border:4px solid #fff;box-shadow:0 0 0 4px var(--g1),0 0 28px var(--g2),0 16px 34px #0005;overflow:hidden}.spk::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 10%,#fff4 0,transparent 40%),radial-gradient(circle at 85% 90%,#fff3 0,transparent 45%);pointer-events:none}.spk-mk{font-family:Amiri,serif;font-size:60px;line-height:.6;opacity:.7}.spk-ic{font-size:48px;line-height:1.2}.spk-tx{font-family:Amiri,Cairo,serif;font-size:25px;font-weight:700;line-height:2;text-shadow:0 2px 8px #0008;padding:6px 4px}.spk-au{margin-top:14px;font-family:Cairo,system-ui,sans-serif;font-size:17px;font-weight:900;color:#fef08a;text-shadow:0 1px 4px #000a}.spk-day{margin-top:14px;display:inline-block;background:#0003;border-radius:999px;padding:4px 14px;font-family:Cairo,system-ui,sans-serif;font-size:12px;font-weight:800}.fcard .spk-tx{font-size:22px}
 
 .gqty{flex-wrap:wrap}.gqty .gq{min-width:52px}
+
+.whstage{width:min(84vw,320px);height:min(84vw,320px)}.whlb{width:98px;height:70px;margin-left:-49px;margin-top:-35px;gap:1px}.whlb .whe{font-size:26px;line-height:1}.whlb img,.whlb canvas,.whlb video{width:40px!important;height:40px!important;object-fit:contain}.whlb .whn{font-size:11px;max-width:98px}.whlb .whp{font-size:11px;font-weight:900;color:#fef9c3;background:#0007;border-radius:999px;padding:0 6px;direction:ltr}
+
+#rlb{border:2px solid #facc15!important;padding:0!important;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 28%,#fde68a55,#2a1a5e 62%,#120b30 100%)!important;box-shadow:0 0 10px #facc1566,inset 0 0 6px #facc1544;animation:whPulse 2.4s ease-in-out infinite}#rlb svg{width:32px;height:32px;transition:transform .6s ease}#rlb:active svg{transform:rotate(60deg)}@keyframes whPulse{0%,100%{box-shadow:0 0 8px #facc1550,inset 0 0 6px #facc1544}50%{box-shadow:0 0 18px #facc19bb,inset 0 0 8px #facc1566}}
 </style>
 <link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap">
 </head>
@@ -2553,7 +2557,7 @@ function renderProfile(a){
   const grid=el("div","sgrid"); a.append(grid);
   [...((window.IS_ADMIN&&!OWNER)?[["🛡️","#22d3ee","لوحة الأدمن",sheetAdmin]]:[]),["🎨","#a78bfa","صور جاهزة",()=>presetSheet(256,256,async u=>{ await saveProf({photo:u}); render(); })],["🖼️","#34d399","تغيير الصورة",()=>file.click()],["✏️","#f59e0b","تغيير الاسم",sheetName],["📝","#38bdf8","النبذة",sheetBio],["🎨","#c084fc","خلفية البروفايل",sheetTheme],
    ["✨","#f472b6","المتجر",go("shop")],["🚪","#34d399","مؤثرات الدخول",go("shop")],["👛","#facc15","المحفظة",sheetWallet],
-   ["🔐","#60a5fa","تفاصيل الحساب",sheetAccount],["🔊","#38bdf8",soundOn?"الصوت: تشغيل":"الصوت: إيقاف",()=>{ soundOn=!soundOn; try{localStorage.setItem("wsm_snd",soundOn?"1":"0")}catch(e){} render(); if(soundOn) sndClick(); }],...(OWNER?[["🛠️","#8b5cf6","ضبط التطبيق",ownerPanel]]:[]),["🗑️","#ef4444","حذف الحساب",deleteAccountSheet],["📜","#38bdf8","سياسة الخصوصية",()=>window.open("privacy.html","_blank")],["📲","#22c55e","تثبيت التطبيق على الشاشة",()=>window.__install?window.__install():alert("افتح التطبيق من Chrome ثم اضغط ⋮ واختر تثبيت التطبيق")],["🔒","#ef4444","تسجيل الخروج",logout]].forEach(([i,c,t,fn])=>{
+   ["🔐","#60a5fa","تفاصيل الحساب",sheetAccount],["🔊","#38bdf8",soundOn?"الصوت: تشغيل":"الصوت: إيقاف",()=>{ soundOn=!soundOn; try{localStorage.setItem("wsm_snd",soundOn?"1":"0")}catch(e){} render(); if(soundOn) sndClick(); }],...(OWNER?[["🛠️","#8b5cf6","ضبط التطبيق",ownerPanel]]:[]),["🆘","#22c55e","الدعم الفني",supportSheet],["🗑️","#ef4444","حذف الحساب",deleteAccountSheet],["📜","#38bdf8","سياسة الخصوصية",()=>window.open("privacy.html","_blank")],["📲","#22c55e","تثبيت التطبيق على الشاشة",()=>window.__install?window.__install():alert("افتح التطبيق من Chrome ثم اضغط ⋮ واختر تثبيت التطبيق")],["🔒","#ef4444","تسجيل الخروج",logout]].forEach(([i,c,t,fn])=>{
     const r=el("button","scirc"+(i==="🔒"?" out":"")), ic=el("span","sci",i); ic.style.background=c+"33";
     r.append(ic,el("span","sct",t)); r.onclick=fn; grid.append(r)});
 }
@@ -2622,7 +2626,7 @@ function sheetAppTheme(){ sheet("🎨 لون واجهة التطبيق",(c,close
   const rs=el("button","btn alt full","↩️ إعادة الألوان الافتراضية"); rs.style.marginTop="8px"; rs.onclick=async()=>{ try{ await db.doc("app/theme").delete(); applyTheme(null); try{ localStorage.removeItem("thmC"); }catch(_){} toast("عادت الألوان الافتراضية للجميع ✓"); }catch(e){ toast("تعذر التنفيذ"); } }; c.append(rs); }); }
 function sCirc(emoji,label,fn){ const r=el("button","scirc"), ic=el("span","sci",emoji), t=el("span","sct",label); r.append(ic,t); r.onclick=fn; return r; }
 function ownerPanel(){ sheet("🛠️ ضبط التطبيق",(c,close)=>{ const g=el("div","sgrid");
-  [["👑","لوحة المالك",()=>{ close(); sheetOwner(); }],["👤","ضبط المستخدمين",()=>{ close(); usersMgr(); }],["🏠","ضبط الغرف",()=>{ close(); roomsMgr(); }],["🚩","البلاغات",()=>{ close(); reportsList(); }],["🛡️","الأدمن",()=>{ close(); staffMgr(); }],["🎨","لون الواجهة",()=>{ close(); sheetAppTheme(); }]]
+  [["👑","لوحة المالك",()=>{ close(); sheetOwner(); }],["👤","ضبط المستخدمين",()=>{ close(); usersMgr(); }],["🏠","ضبط الغرف",()=>{ close(); roomsMgr(); }],["🚩","البلاغات",()=>{ close(); reportsList(); }],["🛡️","الأدمن",()=>{ close(); staffMgr(); }],["🎨","لون الواجهة",()=>{ close(); sheetAppTheme(); }],["🆘","الدعم الفني",()=>{ close(); supportMgr(); }]]
     .forEach(([i,t,f])=>g.append(sCirc(i,t,f)));
   c.append(g); }); }
 function usersMgr(){ const US={bal:{},ban:{}}; sheet("👤 المستخدمون",(c,close)=>{ c.closest(".ov")?.classList.add("ovc"); const q=el("input"); q.placeholder="بحث بالاسم أو الـ ID"; const L=el("div"); L.style.cssText="max-height:55vh;overflow:auto;margin-top:8px";
@@ -2840,7 +2844,7 @@ const RLC=["#ef4444","#3b82f6","#22c55e","#f59e0b"];
 const WHEEL_FEE=10000, WHEEL_BIG=50000;
 const WH_COLS=["#f43f5e","#f59e0b","#22c55e","#06b6d4","#6366f1","#ec4899","#84cc16","#f97316"];
 let WH={rid:null,unS:null,unA:null,state:null,apps:[],seen:"",winSeen:"",init:0,timers:[],ac:null};
-const whPrizes=()=>GIFTS.filter(g=>g[2]>=1000).map(g=>({name:g[1],emo:g[0],key:g[6],price:g[2],w:g[2]>WHEEL_BIG?1:10}));
+const whPrizes=()=>GIFTS.filter(g=>g[2]>=1000).sort((a1,b1)=>a1[2]-b1[2]).slice(5).map(g=>({name:g[1],emo:g[0],key:g[6],price:g[2],g:g,w:g[2]>WHEEL_BIG?1:10}));
 function whPath(x){ return "rooms/"+WH.rid+"/wheel/"+x; }
 function wheelStop(){ try{ if(WH.unS) WH.unS(); }catch(e){} try{ if(WH.unA) WH.unA(); }catch(e){} WH.timers.forEach(clearTimeout); WH.timers=[]; WH.unS=WH.unA=null; WH.rid=null; WH.state=null; WH.apps=[]; WH.init=0; }
 function wheelWatch(){ if(!room||WH.rid===room.id) return; wheelStop(); WH.rid=room.id; const rid=room.id;
@@ -2875,11 +2879,11 @@ function whAnimate(sp){ const W=document.getElementById("whWheel"); if(!W) retur
   whTicks(6000); WH.timers.push(setTimeout(whStopSound,6000)); }
 function whBuild(c){ const P2=whPrizes(), N=P2.length||1, step=360/N;
   const head=el("div","whh"); const xb=el("button","rb","✕"); xb.onclick=whClose; head.append(el("span",null,"🎡 عجلة الحظ"), xb); c.append(head);
-  c.append(el("div","whfee","التقديم "+fmtc(WHEEL_FEE)+" 🪙 • الهدايا فوق "+fmtc(WHEEL_BIG)+" تظهر بنسبة أقل"));
+  c.append(el("div","whfee","التقديم "+fmtc(WHEEL_FEE)+" 🪙"));
   c.append(el("div","whst"));
   const stage=el("div","whstage"), W=el("div","whl"); W.id="whWheel";
   W.style.background="conic-gradient("+P2.map((x,i)=>WH_COLS[i%WH_COLS.length]+" "+(i*step)+"deg "+((i+1)*step)+"deg").join(",")+")";
-  P2.forEach((x,i)=>{ const a=i*step+step/2, lb=el("div","whlb"); lb.style.transform="rotate("+a+"deg) translateY(-108px) rotate("+(-a)+"deg)"; lb.append(el("span","whe",x.emo), el("span","whn",x.name)); W.append(lb); });
+  P2.forEach((x,i)=>{ const a=i*step+step/2, lb=el("div","whlb"); lb.style.transform="rotate("+a+"deg) translateY(-108px) rotate("+(-a)+"deg)"; lb.append(giftImg(x.g,40,x.emo), el("span","whn",x.name), el("span","whp",fmtc(x.price)+" 🪙")); W.append(lb); });
   stage.append(el("div","whptr","▼"), W, el("div","whhub")); c.append(stage);
   c.append(el("div","whlist"), el("div","whfoot")); }
 function whClose(){ const o=document.getElementById("whov"); if(o) o.remove(); }
@@ -2900,6 +2904,7 @@ function wheelRedraw(){ const o=document.getElementById("whov"); if(!o) return; 
   if(mod){ const sp=el("button","btn full whspin", s.status==="spinning"?"🎡 تدور…":"🎡 تدوير العجلة"); sp.disabled=!s.current||s.status==="spinning"; sp.onclick=wheelSpin; F.append(sp);
     if(s.last&&!s.current&&s.last.uid){ const gb=el("button","btn full whgift","🎁 إرسال الجائزة إلى "+s.last.name); gb.onclick=()=>{ whClose(); openGifts(s.last.uid); }; F.append(gb); } }
   else { const applied=WH.apps.some(x=>x.uid===uid); const jb=el("button","btn full whjoin", applied?"✓ أنت مسجّل":"🎟️ التقديم — "+fmtc(WHEEL_FEE)+" 🪙"); jb.disabled=applied; jb.onclick=wheelApply; F.append(jb); } }
+function whBtnIcon(){ return '<svg viewBox="-2 -4 52 54" aria-hidden="true">'+'<path d="M24 24L41 24L32.5 38.7Z" fill="#ef4444"/><path d="M24 24L32.5 38.7L15.5 38.7Z" fill="#facc15"/>'+'<path d="M24 24L15.5 38.7L7 24Z" fill="#22c55e"/><path d="M24 24L7 24L15.5 9.3Z" fill="#3b82f6"/>'+'<path d="M24 24L15.5 9.3L32.5 9.3Z" fill="#a855f7"/><path d="M24 24L32.5 9.3L41 24Z" fill="#f97316"/>'+'<circle cx="24" cy="24" r="21" fill="none" stroke="#facc15" stroke-width="3"/>'+'<circle cx="24" cy="24" r="4.5" fill="#fff" stroke="#7c3aed" stroke-width="2"/>'+'<polygon points="24,-3 19,4 29,4" fill="#ef4444" stroke="#fff" stroke-width="1.2"/></svg>'; }
 function rlPanel(){ wheelPanel(); }
 function rlPanelOld(){ if(document.getElementById("rlov")) return; const o=el("div","ov"); o.id="rlov"; const c=el("div","card sheet rlc"); o.append(c); document.body.append(o);
   const shut=()=>{ RL.draw=null; o.remove(); }; o.onclick=e=>{ if(e.target===o) shut(); };
@@ -2930,7 +2935,7 @@ let seats={},unsubSeats=null,micMuted=false;
 const hueOf=id=>{let h=0;for(const c of id)h=(h*31+c.charCodeAt(0))%360;return h};
 const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e3?(n/1e3).toFixed(1)+"K":String(n);
 const seatRef=i=>db.doc("rooms/"+room.id+"/seats/"+i);
-let unsubPres=null, presDocs=[], presFirst=true, presHB=null;
+let unsubPres=null, presDocs=[], presFirst=true, presHB=null, presJT=0;
 let presSeen={};
 const presLive=()=>presDocs.filter(p=>p.room&&p.t&&Date.now()-p.t<95000);
 const fsErrShown={};
@@ -2940,15 +2945,15 @@ function entryBanner(q){ document.querySelectorAll(".entryb2").forEach(x=>x.remo
 function startPres(){ if(unsubPres||!db) return;
   unsubPres=db.collection("presence").onSnapshot(sn=>{ presDocs=sn.docs.map(d=>d.data()); const now=Date.now();
     presDocs.forEach(q=>{ const z=presSeen[q.uid];
-      if(!presFirst&&room&&q.room===room.id&&q.uid!==uid&&(!z||z.room!==q.room)) entryBanner(q);
-      if(!z||z.t!==q.t||z.room!==q.room) presSeen[q.uid]={t:q.t,room:q.room,seenAt:now}; });
+      if(!presFirst&&room&&q.room===room.id&&q.uid!==uid&&(!z||z.room!==q.room||z.jt!==q.jt)) entryBanner(q);
+      if(!z||z.t!==q.t||z.room!==q.room||z.jt!==q.jt) presSeen[q.uid]={t:q.t,room:q.room,jt:q.jt,seenAt:now}; });
     Object.keys(presSeen).forEach(k=>{ if(!presDocs.some(d=>d.uid===k)) delete presSeen[k]; });
     presFirst=false; presPaint(); });
   setInterval(presPaint,15000); }
 function presPaint(){ document.querySelectorAll(".rcn").forEach(x=>{ const n=presIn(x.dataset.r).length; x.textContent=String(n); x.classList.toggle("z",!n); });
   const n=document.getElementById("pcnt"); if(n&&room) n.textContent=String(presIn(room.id).length);
   const sh=document.getElementById("pshl"); if(sh&&room) presFill(sh); if(window.__modDraw) window.__modDraw(); }
-function presSet(){ if(!room||!uid) return; db.doc("presence/"+uid).set({uid:uid,name:prof.name||"",pid:prof.pid||0,room:room.id,t:Date.now()}).catch(e=>window.__fsErr("presence",e)); }
+function presSet(){ if(!room||!uid) return; db.doc("presence/"+uid).set({uid:uid,name:prof.name||"",pid:prof.pid||0,room:room.id,jt:presJT,t:Date.now()}).catch(e=>window.__fsErr("presence",e)); }
 function presOn(){ presSet(); clearInterval(presHB); presHB=setInterval(presSet,30000); }
 function presOff(){ clearInterval(presHB); presHB=null; if(uid&&db) db.doc("presence/"+uid).delete().catch(()=>{}); }
 var musHid=false;
@@ -2961,7 +2966,7 @@ function presSheet(){ const o=el("div","ov"), c=el("div","card sheet"); c.append
   const x=el("button","btn alt full","إغلاق"); x.style.marginTop="8px"; x.onclick=()=>o.remove(); c.append(x); o.append(c); o.onclick=e=>{ if(e.target===o) o.remove(); }; document.body.append(o); presFill(L); }
 function rnWith(r){ const x=el("div","rn"); const n=presIn(r.id).length; const pc=el("span","rcn"+(n?"":" z"),String(n)); pc.dataset.r=r.id; x.append(el("span","rnn",(r.pin?"🔒 ":"")+r.name),pc); return x; }
 function openRoom(r){
-  room=r; msgs=[]; seats={}; micMuted=false; joinT=Date.now()-1500; watchTop();
+  room=r; presJT=Date.now(); msgs=[]; seats={}; micMuted=false; joinT=Date.now()-1500; watchTop();
   unsubMsgs=db.collection("rooms/"+r.id+"/msgs").where("t",">=",joinT).orderBy("t","asc").limit(300).onSnapshot(s=>{msgs=s.docs.map(d=>d.data()).filter(m=>m.t>=joinT); drawChat(); try{ s.docChanges().forEach(ch=>{ if(ch.type==="added"){ const m=ch.doc.data(); if(m.type==="gift"&&m.t>=joinT&&Date.now()-m.t<10000) giftPop(m); } }); }catch(_){} });
   unsubSeats=db.collection("rooms/"+r.id+"/seats").onSnapshot(s=>{seats={}; s.docs.forEach(d=>seats[d.id]=d.data()); drawSeats(); rtSync();}); rtStart(r.id);
   unsubRoomDoc=db.doc("rooms/"+r.id).onSnapshot(sn=>{ if(!room||room.id!==r.id) return; if(!sn.exists){ toast("تم حذف الغرفة"); closeRoom(); return; } const v=document.getElementById("mi"), val=v?v.value:""; room={...room,...sn.data(),id:r.id}; render(); const n=document.getElementById("mi"); if(n) n.value=val; if(window.__modDraw) window.__modDraw(); });
@@ -3442,7 +3447,7 @@ function renderRoom(a){
   fl.append(chb,disc,mic2,mm,gmb,gb);
   const bar=el("div","rs-bar");
   const inp=el("input"); inp.placeholder="اكتب رسالتك…"; inp.maxLength=200; inp.id="mi"; if(room.chatOff&&!isMod()){inp.disabled=true; inp.placeholder="الدردشة مغلقة من الإدارة";}
-  const emo=el("button","rb"); emo.innerHTML=icH("slot"); emo.id="rlb"; emo.style.position="relative"; const rlc=el("span","pcb","0"); rlc.style.display="none"; emo.append(rlc); emo.onclick=rlPanel;
+  const emo=el("button","rb"); emo.innerHTML=whBtnIcon(); emo.id="rlb"; emo.style.position="relative"; const rlc=el("span","pcb","0"); rlc.style.display="none"; emo.append(rlc); emo.onclick=rlPanel;
   const send=el("button","rb"); send.innerHTML=icH("send");
   const go=async()=>{const x=inp.value.trim(); if(!x) return; if(room.chatOff&&!isMod()) return toast("الدردشة مغلقة"); inp.value=""; const rp=replyTo; replyTo=null; paintReply(); await db.collection("rooms/"+room.id+"/msgs").add(Object.assign({type:"text",uid,name:(prof.badge||"")+prof.name,text:x,t:Date.now()},rp?{reply:{n:rp.n,t:rp.t}}:{}));};
   send.onclick=go; inp.onkeydown=e=>{if(e.key==="Enter")go()};
@@ -3504,6 +3509,54 @@ function setReply(m){ if(room&&room.chatOff&&!isMod()) return toast("الدرد�
 async function reportMsg(){ if(!replyTo||!room) return; if(!confirm("إبلاغ الإدارة عن هذه الرسالة؟")) return; const r0=replyTo; replyTo=null; paintReply();
   try{ await db.collection("reports").add({roomId:room.id,roomName:room.name||"",reporterUid:uid,reporterName:prof.name,reporterPid:prof.pid,targetUid:r0.mu||"",targetName:r0.n||"",msg:r0.full||"",msgT:r0.mt||0,t:Date.now()}); toast("تم إرسال البلاغ للإدارة ✓"); }
   catch(e){ toast("تعذر إرسال البلاغ"); } }
+const SUP_FAQ=[
+ {q:"كيف أشحن الرصيد؟", k:["شحن","اشحن","رصيد","ايداع","دفع"], a:"الشحن يتم عن طريق أحد الوكلاء المعتمدين. افتح المحفظة، واختر الوكلاء، وراسل الوكيل ليحوّل لك الرصيد."},
+ {q:"كيف أحوّل نقاطاً لمستخدم آخر؟", k:["تحويل","حول","ارسل","نقاط","هدية"], a:"من المحفظة اختر التحويل وأدخل ID المستخدم والمبلغ. الحد اليومي للتحويل 10,000 نقطة لكل حساب."},
+ {q:"كيف أصبح وكيلاً؟", k:["وكيل","وكالة","وكاله","اصبح"], a:"قدّم طلب وكالة من المحفظة. لا تتم الموافقة إلا من المالك بعد مراجعة معلوماتك."},
+ {q:"كيف أعمل عجلة الحظ؟", k:["عجلة","عجله","حظ","دوران"], a:"تقدّم للعجلة برسوم 10,000 نقطة، ثم يوافق المالك على طلبك، ويتم الدوران داخل الغرفة."},
+ {q:"كيف تُحسب رسوم الألعاب؟", k:["لعبة","العاب","ألعاب","رسوم","فوز","لعب"], a:"اللعب ضد الكمبيوتر مجاني. اللعب العشوائي أو ضد صديق يكلّف 2000 نقطة لكل لاعب، والفائز يحصل على 60% من المجموع."},
+ {q:"كيف أغيّر اسمي؟", k:["اسم","غير","تغيير","رمز"], a:"من الإعدادات اختر تغيير الاسم والرمز. التغيير مجاني مرة كل 20 يوماً، وقبل ذلك برسوم 20,000 نقطة."},
+ {q:"نسيت كلمة المرور", k:["كلمه","كلمة","مرور","نسيت","نسيان","سر","دخول"], a:"في شاشة الدخول اضغط على رابط نسيت كلمة المرور واتبع الخطوات."},
+ {q:"كيف أحذف حسابي؟", k:["حذف","احذف","الحساب","حساب"], a:"من الإعدادات اختر حذف الحساب. الحذف نهائي ولا يمكن التراجع عنه."},
+ {q:"الصوت أو الموسيقى", k:["صوت","موسيقى","اغنيه","اغنية","مزعج"], a:"من الإعدادات اختر الصوت لتشغيله أو إيقافه."},
+ {q:"تم حظري أو طردي من الغرفة", k:["حظر","محظور","طرد","مطرود","محظورة"], a:"إذا تم حظرك تظهر لك شاشة توضح ذلك. أرسل بلاغاً للمالك لمراجعة حالتك."},
+ {q:"لا تظهر الهدايا أو التأثيرات", k:["هدية","هدايا","تأثير","تاثير","لا يظهر","مايظهر","ما يظهر","تحديث"], a:"حدّث الصفحة، ثم أعد فتح الغرفة. إذا استمرت المشكلة فأرسل بلاغاً مع اسم الغرفة."}
+];
+function supNorm(s){ return String(s||"").toLowerCase().replace(/[ً-ْ]/g,"").replace(/[إأآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي"); }
+function supTicketRow(x,reload,staff){ const row=el("div","card room sptk"); row.style.display="block";
+  const head=el("div"); head.append(el("b",null,x.status==="done"?"✅ تم الحل":"🕓 مفتوح"), el("span","mut"," • "+new Date(x.t||0).toLocaleString("ar-IQ")));
+  if(staff) head.append(el("div","mut","من: "+(x.name||"")+" (ID "+(x.pid||"")+")"));
+  row.append(head, el("p",null,x.text||""));
+  (x.thread||[]).forEach(m=>row.append(el("div",m.f==="o"?"umbio":"mut",(m.f==="o"?"🛠️ الدعم: ":"👤 ")+(m.x||""))));
+  const inp=el("input"); inp.placeholder=staff?"ردّ على المستخدم…":"أضف توضيحاً…"; inp.maxLength=600;
+  const btn=el("button","btn alt",staff?"📨 رد":"📨 إرسال");
+  btn.onclick=async()=>{ const v=inp.value.trim(); if(!v) return; try{ const ref=db.doc("support/"+x.id); const s=await ref.get(); const cur=(s.data()||{}).thread||[]; const upd={thread:[...cur,{f:staff?"o":"u",x:v,t:Date.now()}]}; if(staff) upd.status="open"; await ref.update(upd); toast("تم الإرسال"); reload(); }catch(e){ toast("تعذر الإرسال"); } };
+  row.append(inp,btn);
+  if(staff){ const done=el("button","btn alt","✅ تم الحل"); done.onclick=async()=>{ try{ await db.doc("support/"+x.id).update({status:"done"}); reload(); }catch(e){ toast("تعذر التحديث"); } };
+    const del=el("button","btn alt","🗑️ حذف"); del.onclick=async()=>{ try{ await db.doc("support/"+x.id).delete(); row.remove(); }catch(e){ toast("تعذر الحذف"); } };
+    row.append(done,del); }
+  return row; }
+function supportSheet(){ sheet("🆘 الدعم الفني",(c,close)=>{
+  const inp=el("input"); inp.placeholder="اكتب سؤالك، مثل: كيف أحوّل نقاط؟"; inp.maxLength=100;
+  const res=el("div"); const lst=el("div");
+  inp.oninput=()=>{ res.innerHTML=""; const v=supNorm(inp.value.trim()); if(!v) return;
+    const hits=SUP_FAQ.map(f=>({f,s:f.k.filter(k=>v.includes(supNorm(k))).length})).filter(x=>x.s>0).sort((a1,b1)=>b1.s-a1.s).slice(0,3);
+    if(!hits.length) res.append(el("p","mut","لم أجد جواباً لسؤالك. أرسل بلاغاً أدناه وسيرد عليك المالك."));
+    hits.forEach(h=>{ const card=el("div","card room"); card.style.display="block"; card.append(el("b",null,h.f.q), el("p",null,h.f.a)); res.append(card); }); };
+  const ta=el("textarea"); ta.placeholder="اشرح مشكلتك بالتفصيل (حتى 800 حرف)"; ta.maxLength=800;
+  const sb=el("button","btn full","📨 إرسال البلاغ");
+  const loadTix=async()=>{ lst.innerHTML=""; try{ const q=await db.collection("support").where("uid","==",uid).limit(30).get();
+      const arr=q.docs.map(d=>({id:d.id,...d.data()})).sort((a1,b1)=>(b1.t||0)-(a1.t||0));
+      if(!arr.length) lst.append(el("p","mut","لا توجد بلاغات بعد.")); arr.forEach(x=>lst.append(supTicketRow(x,loadTix,false))); }catch(e){ lst.append(el("p","mut","تعذر تحميل البلاغات")); } };
+  sb.onclick=async()=>{ const t=ta.value.trim(); if(t.length<5) return toast("اكتب مشكلتك بالتفصيل"); sb.disabled=true;
+    try{ await db.collection("support").add({uid:uid,name:prof.name||"",pid:prof.pid||0,text:t,status:"open",t:Date.now(),thread:[]}); ta.value=""; toast("تم إرسال البلاغ ✅"); loadTix(); }catch(e){ toast("تعذر الإرسال"); }
+    sb.disabled=false; };
+  c.append(el("p","mut","ابحث عن جواب، أو أرسل بلاغاً للمالك."), inp, res, ta, sb, el("b",null,"بلاغاتي"), lst);
+  loadTix(); }); }
+function supportMgr(){ sheet("🆘 الدعم الفني",async(c,close)=>{ const lst=el("div"); c.append(lst);
+  const load=async()=>{ lst.innerHTML=""; lst.append(el("p","mut","جارٍ التحميل…")); try{ const q=await db.collection("support").orderBy("t","desc").limit(100).get(); lst.innerHTML="";
+      if(q.empty) lst.append(el("p","mut","لا توجد بلاغات.")); q.docs.forEach(d=>lst.append(supTicketRow(Object.assign({id:d.id},d.data()),load,true))); }catch(e){ lst.textContent="تعذر التحميل"; } };
+  load(); }); }
 function reportsList(){ sheet("🚩 البلاغات",async(c,close)=>{ const box=el("div"); box.append(el("p","mut","جارٍ التحميل…")); c.append(box);
   try{ const q=await db.collection("reports").orderBy("t","desc").limit(100).get(); box.innerHTML="";
     if(q.empty) box.append(el("p","mut","لا توجد بلاغات."));
